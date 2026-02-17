@@ -1,0 +1,21 @@
+# 仮想環境
+venv/
+
+# 環境変数(APIキーなどが入ってるので絶対に上げない!)
+.env
+
+# Pythonキャッシュ
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Django
+*.sqlite3
+db.sqlite3
+
+# macOS
+.DS_Store
+
+# VSCode
+.vscode/
