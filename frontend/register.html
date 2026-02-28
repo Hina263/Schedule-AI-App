@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新規登録 - スケジュールアプリ</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .logo h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .logo p {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 16px;
+    }
+
+    input:focus { border-color: #4a6cf7; }
+    input.invalid { border-color: #ef4444; }
+
+    .field-hint {
+      font-size: 0.72rem;
+      color: #aaa;
+      margin-top: -12px;
+      margin-bottom: 14px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: #4a6cf7;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+      margin-top: 4px;
+    }
+
+    .btn-primary:hover    { background: #3a5ae0; }
+    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .msg {
+      font-size: 0.82rem;
+      padding: 9px 12px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    .msg.error   { background: #fee2e2; color: #991b1b; display: block; }
+    .msg.success { background: #dcfce7; color: #166534; display: block; }
+    .msg.loading { background: #e0e7ff; color: #3730a3; display: block; }
+
+    .auth-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .auth-link a {
+      color: #4a6cf7;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .auth-link a:hover { text-decoration: underline; }
+
+    .spinner {
+      display: inline-block;
+      width: 13px; height: 13px;
+      border: 2px solid #bbb;
+      border-top-color: #4a6cf7;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo">
+    <h1>スケジュールアプリ</h1>
+    <p>予定を AI が自動整理します</p>
+  </div>
+
+  <div class="card">
+    <h2>新規登録</h2>
+
+    <div id="msg" class="msg"></div>
+
+    <form id="registerForm">
+      <label for="username">ユーザー名</label>
+      <input type="text" id="username" placeholder="例: taro_yamada" required autocomplete="username">
+      <p class="field-hint">半角英数字・アンダースコアが使えます</p>
+
+      <label for="email">メールアドレス</label>
+      <input type="email" id="email" placeholder="example@mail.com" required autocomplete="email">
+
+      <label for="password">パスワード</label>
+      <input type="password" id="password" placeholder="8文字以上" required autocomplete="new-password">
+
+      <label for="password2">パスワード（確認）</label>
+      <input type="password" id="password2" placeholder="もう一度入力" required autocomplete="new-password">
+
+      <button class="btn-primary" type="submit" id="registerBtn">登録する</button>
+    </form>
+
+    <p class="auth-link">
+      既にアカウントをお持ちの方は <a href="/login/">ログイン</a>
+    </p>
+  </div>
+</div>
+
+<script>
+  const API_BASE = '/api/auth';
+
+  // 既にログイン済みならカレンダーへ
+  if (localStorage.getItem('access_token')) {
+    window.location.replace('/home/');
+  }
+
+  document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const username  = document.getElementById('username').value.trim();
+    const email     = document.getElementById('email').value.trim();
+    const password  = document.getElementById('password').value;
+    const password2 = document.getElementById('password2').value;
+    const btn       = document.getElementById('registerBtn');
+
+    // クライアント側バリデーション
+    if (password !== password2) {
+      return showMsg('error', 'パスワードが一致しません');
+    }
+    if (password.length < 8) {
+      return showMsg('error', 'パスワードは8文字以上で設定してください');
+    }
+
+    btn.disabled = true;
+    showMsg('loading', '<span class="spinner"></span>登録中…');
+
+    try {
+      const res  = await fetch(`${API_BASE}/register/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '登録に失敗しました');
+
+      // 登録成功 → セッション保存してカレンダーへ
+      saveSession(data);
+      showMsg('success', '登録が完了しました！カレンダーへ移動します…');
+      setTimeout(() => window.location.replace('/home/'), 1000);
+    } catch (err) {
+      showMsg('error', err.message);
+      btn.disabled = false;
+    }
+  });
+
+  function saveSession(data) {
+    localStorage.setItem('access_token',  data.tokens.access);
+    localStorage.setItem('refresh_token', data.tokens.refresh);
+    localStorage.setItem('user_id',       String(data.user.id));
+    localStorage.setItem('user_name',     data.user.username);
+    localStorage.setItem('user_email',    data.user.email);
+  }
+
+  function showMsg(type, html) {
+    const el = document.getElementById('msg');
+    el.className = `msg ${type}`;
+    el.innerHTML = html;
+    el.style.display = 'block';
+  }
+</script>
+</body>
+</html>

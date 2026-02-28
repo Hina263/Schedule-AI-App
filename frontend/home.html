@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>スケジュール - ホーム</title>
+  <style>
+    :root {
+      --main:       #4A90E2;
+      --main-dark:  #357ABD;
+      --main-light: #E8F2FC;
+      --bg:         #F5F5F5;
+      --white:      #FFFFFF;
+      --text:       #333333;
+      --sub:        #888888;
+      --border:     #E0E0E0;
+      --nav-h:      60px;
+      --hdr-h:      104px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    /* ========= ヘッダー ========= */
+    .hdr {
+      position: fixed; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      background: var(--main);
+      z-index: 200;
+    }
+    .hdr-top {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 8px;
+    }
+    .hdr-top h1 { font-size: 1.15rem; font-weight: 700; color: #fff; }
+    .hdr-date   { font-size: 0.78rem; color: rgba(255,255,255,.8); }
+
+    .tabs { display: flex; }
+    .tab-btn {
+      flex: 1; padding: 9px 0;
+      background: none; border: none;
+      color: rgba(255,255,255,.65);
+      font-size: 0.88rem; font-weight: 500;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all .15s;
+    }
+    .tab-btn.active { color: #fff; border-bottom-color: #fff; font-weight: 700; }
+
+    /* ========= コンテンツ ========= */
+    .content {
+      padding-top: calc(var(--hdr-h) + 8px);
+      padding-bottom: calc(var(--nav-h) + 12px);
+    }
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* --- 今日ビュー --- */
+    .today-wrap { padding: 12px 14px; }
+    .section-label {
+      font-size: 0.78rem; font-weight: 700;
+      color: var(--sub); margin-bottom: 10px;
+    }
+
+    .ev-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      display: flex; gap: 10px; align-items: flex-start;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .ev-time {
+      min-width: 46px; text-align: right;
+      font-size: 0.72rem; color: var(--sub); line-height: 1.5;
+    }
+    .ev-bar {
+      width: 3px; border-radius: 3px; align-self: stretch; flex-shrink: 0;
+    }
+    .ev-bar.activity { background: #4A90E2; }
+    .ev-bar.deadline { background: #E25C5C; }
+    .ev-bar.block    { background: #E2A44A; }
+    .ev-body { flex: 1; min-width: 0; }
+    .ev-title {
+      font-size: 0.9rem; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .ev-badge {
+      display: inline-block; font-size: 0.65rem;
+      padding: 1px 6px; border-radius: 4px; font-weight: 500;
+    }
+    .ev-badge.activity { background: #dbeafe; color: #1d4ed8; }
+    .ev-badge.deadline { background: #fee2e2; color: #b91c1c; }
+    .ev-badge.block    { background: #fef3c7; color: #92400e; }
+    .allday-tag {
+      font-size: 0.65rem; padding: 1px 6px; border-radius: 4px;
+      background: #e0e7ff; color: #3730a3; font-weight: 600;
+    }
+    .del-btn {
+      background: none; border: none;
+      color: #d0d0d0; font-size: 1rem;
+      cursor: pointer; padding: 4px 5px;
+      border-radius: 6px; align-self: flex-start; flex-shrink: 0;
+      transition: color .15s, background .15s; line-height: 1;
+    }
+    .del-btn:hover  { color: #ef4444; background: #fee2e2; }
+    .del-btn:active { background: #fecaca; }
+
+    /* --- 週間ビュー --- */
+    .week-nav, .month-nav {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px 6px;
+    }
+    .nav-arrow {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 8px; width: 30px; height: 30px;
+      cursor: pointer; font-size: .9rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-arrow:active { background: var(--bg); }
+    .range-label { font-size: 0.85rem; font-weight: 600; }
+
+    .week-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 3px; padding: 0 10px;
+    }
+    .wd-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .wd-name {
+      font-size: 0.62rem; font-weight: 600;
+      color: var(--sub); padding: 2px 0;
+    }
+    .wd-num {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 600; color: var(--text);
+    }
+    .wd-num.today { background: var(--main); color: #fff; }
+    .wd-num.sun   { color: #e74c3c; }
+    .wd-num.sat   { color: #3498db; }
+    .wd-num.today.sun, .wd-num.today.sat { color: #fff; }
+    .wd-events { width: 100%; }
+    .wd-pill {
+      display: block; font-size: 0.52rem; font-weight: 500;
+      padding: 1px 2px; border-radius: 3px; margin-bottom: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;
+    }
+    .wd-pill.activity { background: #dbeafe; color: #1d4ed8; }
+    .wd-pill.deadline { background: #fee2e2; color: #b91c1c; }
+    .wd-pill.block    { background: #fef3c7; color: #92400e; }
+    .wd-more { font-size: 0.52rem; color: var(--sub); text-align: center; }
+
+    /* --- 月間ビュー --- */
+    .month-label { font-size: 0.95rem; font-weight: 700; }
+    .mo-wrap { padding: 0 10px; }
+    .mo-daynames {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 3px;
+    }
+    .mo-dayname {
+      text-align: center; font-size: 0.65rem;
+      font-weight: 600; color: var(--sub); padding: 2px 0;
+    }
+    .mo-dayname:first-child { color: #e74c3c; }
+    .mo-dayname:last-child  { color: #3498db; }
+    .mo-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px;
+    }
+    .mo-cell {
+      min-height: 60px;
+      background: var(--white); border-radius: 7px;
+      padding: 4px 3px;
+      border: 1px solid var(--border); overflow: hidden;
+    }
+    .mo-cell.other-m { opacity: .38; }
+    .mo-cell.today-c { border-color: var(--main); background: var(--main-light); }
+    .mo-num {
+      font-size: 0.7rem; font-weight: 600;
+      margin-bottom: 2px; line-height: 1;
+    }
+    .mo-cell.today-c .mo-num { color: var(--main); }
+    .mo-cell.sun-c  .mo-num  { color: #e74c3c; }
+    .mo-cell.sat-c  .mo-num  { color: #3498db; }
+    .mo-pill {
+      display: block; font-size: 0.5rem; font-weight: 500;
+      padding: 1px 2px; border-radius: 3px; margin-bottom: 1px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mo-pill.activity { background: #dbeafe; color: #1d4ed8; }
+    .mo-pill.deadline { background: #fee2e2; color: #b91c1c; }
+    .mo-pill.block    { background: #fef3c7; color: #92400e; }
+    .mo-more { font-size: 0.48rem; color: var(--sub); }
+
+    /* --- 共通状態表示 --- */
+    .state-box {
+      text-align: center; padding: 36px 20px;
+      color: var(--sub); font-size: 0.88rem;
+    }
+    .spinner {
+      display: inline-block; width: 22px; height: 22px;
+      border: 3px solid #ddd; border-top-color: var(--main);
+      border-radius: 50%; animation: spin .7s linear infinite;
+      margin-bottom: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .err-box {
+      background: #fee2e2; color: #b91c1c;
+      padding: 10px 14px; margin: 10px 14px;
+      border-radius: 8px; font-size: 0.8rem;
+    }
+
+    /* ---- クリック可能セル ---- */
+    .wd-col { cursor: pointer; }
+    .wd-col:active { opacity: .7; }
+    .mo-cell:not(.other-m) { cursor: pointer; }
+    .mo-cell:not(.other-m):active { opacity: .7; }
+
+    /* ---- デイドロワー ---- */
+    .drawer-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 300;
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s;
+    }
+    .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .day-drawer {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%; max-width: 480px;
+      background: var(--white);
+      border-radius: 20px 20px 0 0;
+      z-index: 400;
+      max-height: 75vh;
+      display: flex; flex-direction: column;
+      transition: transform .3s cubic-bezier(.32,.72,0,1);
+    }
+    .day-drawer.open { transform: translateX(-50%) translateY(0); }
+
+    .drawer-handle {
+      width: 36px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 10px auto 4px;
+      flex-shrink: 0;
+    }
+    .drawer-hdr {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 8px 18px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .drawer-title { font-size: 1rem; font-weight: 700; }
+    .drawer-close {
+      background: var(--bg); border: none;
+      width: 28px; height: 28px; border-radius: 50%;
+      cursor: pointer; font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--sub);
+    }
+    .drawer-close:active { background: var(--border); }
+    .drawer-body {
+      overflow-y: auto;
+      padding: 12px 14px;
+      flex: 1;
+      padding-bottom: calc(var(--nav-h) + 12px);
+    }
+
+    /* ========= 下部ナビ ========= */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      height: var(--nav-h);
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      display: flex; z-index: 200;
+      box-shadow: 0 -2px 8px rgba(0,0,0,.06);
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 2px;
+      text-decoration: none; color: var(--sub);
+      font-size: 0.65rem; font-weight: 500;
+      transition: color .15s;
+    }
+    .nav-item.active { color: var(--main); }
+    .nav-icon { font-size: 1.25rem; line-height: 1; }
+  </style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-top">
+    <h1>スケジュール</h1>
+    <span class="hdr-date" id="hdrDate"></span>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="today">今日</button>
+    <button class="tab-btn" data-tab="week">週間</button>
+    <button class="tab-btn" data-tab="month">月間</button>
+  </div>
+</header>
+
+<main class="content">
+
+  <!-- 今日ビュー -->
+  <div id="todayView" class="view active">
+    <div class="today-wrap" id="todayContent">
+      <div class="state-box"><div class="spinner"></div><br>読み込み中…</div>
+    </div>
+  </div>
+
+  <!-- 週間ビュー -->
+  <div id="weekView" class="view">
+    <div class="week-nav">
+      <button class="nav-arrow" id="weekPrev">&#8592;</button>
+      <span class="range-label" id="weekRange">読み込み中…</span>
+      <button class="nav-arrow" id="weekNext">&#8594;</button>
+    </div>
+    <div class="week-grid" id="weekGrid">
+      <div class="state-box" style="grid-column:1/-1"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- 月間ビュー -->
+  <div id="monthView" class="view">
+    <div class="month-nav">
+      <button class="nav-arrow" id="monthPrev">&#8592;</button>
+      <span class="month-label" id="monthLabel"></span>
+      <button class="nav-arrow" id="monthNext">&#8594;</button>
+    </div>
+    <div class="mo-wrap">
+      <div class="mo-daynames">
+        <div class="mo-dayname">日</div><div class="mo-dayname">月</div>
+        <div class="mo-dayname">火</div><div class="mo-dayname">水</div>
+        <div class="mo-dayname">木</div><div class="mo-dayname">金</div>
+        <div class="mo-dayname">土</div>
+      </div>
+      <div class="mo-grid" id="monthGrid">
+        <div class="state-box" style="grid-column:1/-1"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<nav class="bottom-nav">
+  <a href="/home/" class="nav-item active">
+    <span class="nav-icon">🏠</span><span>ホーム</span>
+  </a>
+  <a href="/input/" class="nav-item">
+    <span class="nav-icon">➕</span><span>入力</span>
+  </a>
+  <a href="/result/" class="nav-item">
+    <span class="nav-icon">🔍</span><span>結果</span>
+  </a>
+</nav>
+
+<!-- ===== デイドロワー ===== -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDayDrawer()"></div>
+<div class="day-drawer" id="dayDrawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-hdr">
+    <span class="drawer-title" id="drawerTitle"></span>
+    <button class="drawer-close" onclick="closeDayDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</div>
+
+<script>
+  const API     = 'http://localhost:8000/api/schedule';
+  const USER_ID = 'user1';
+
+  const today = new Date();
+  const DOW   = ['日','月','火','水','木','金','土'];
+
+  // ヘッダー日付
+  document.getElementById('hdrDate').textContent =
+    `${today.getMonth()+1}/${today.getDate()} (${DOW[today.getDay()]})`;
+
+  // 状態
+  let weekOffset  = 0;
+  let calYear     = today.getFullYear();
+  let calMonth    = today.getMonth();
+  const cache     = {};
+  const loaded    = {};
+  let weekEvMap   = {};   // 週間ビューのイベントマップ (key→events[])
+  let monthEvMap  = {};   // 月間ビューのイベントマップ
+
+  // ---- ユーティリティ ----
+  function dateKey(d) {
+    return `${d.getFullYear()}-${zp(d.getMonth()+1)}-${zp(d.getDate())}`;
+  }
+  function zp(n) { return String(n).padStart(2,'0'); }
+  function evDateKey(ev) { return ev.start ? ev.start.slice(0,10) : null; }
+  function fmtTime(s)    { return s ? (s.includes(' ') ? s.split(' ')[1] : '') : ''; }
+  function esc(s)        {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function typeLbl(t) {
+    return ({activity:'アクティビティ', deadline:'締切', block:'ブロック'})[t] || t || '';
+  }
+  function byDateMap(events) {
+    const m = {};
+    events.forEach(ev => {
+      const k = evDateKey(ev); if (!k) return;
+      (m[k] = m[k] || []).push(ev);
+    });
+    return m;
+  }
+
+  // 今週の日曜日 (offset 週ずらし)
+  function weekSunday(offset) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - d.getDay() + offset * 7);
+    return d;
+  }
+
+  // ---- API ----
+  async function fetchEvents(period, key) {
+    if (cache[key]) return cache[key];
+    const res  = await fetch(`${API}/get-events/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: USER_ID, period }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.status !== 'success') throw new Error(data.message || 'エラー');
+    return (cache[key] = data.events || []);
+  }
+
+  // ---- 共通: イベントカード HTML 生成 ----
+  function renderEvCards(evs, dKey, emptyMsg) {
+    const allDay = evs.filter(e => e.is_all_day);
+    const timed  = evs.filter(e => !e.is_all_day)
+                      .sort((a,b) => (a.start||'').localeCompare(b.start||''));
+    let h = '';
+    allDay.forEach(e => {
+      h += `<div class="ev-card" data-id="${e.id}">
+        <div class="ev-time"><span class="allday-tag">終日</span></div>
+        <div class="ev-bar ${e.type||'activity'}"></div>
+        <div class="ev-body">
+          <div class="ev-title">${esc(e.title)}</div>
+          <span class="ev-badge ${e.type||'activity'}">${typeLbl(e.type)}</span>
+        </div>
+        <button class="del-btn" onclick="deleteEvent(${e.id},'${dKey}',this)" title="削除">🗑️</button>
+      </div>`;
+    });
+    timed.forEach(e => {
+      const st = fmtTime(e.start), en = fmtTime(e.end);
+      h += `<div class="ev-card" data-id="${e.id}">
+        <div class="ev-time">${esc(st)}<br><span style="font-size:.65rem">${esc(en)}</span></div>
+        <div class="ev-bar ${e.type||'activity'}"></div>
+        <div class="ev-body">
+          <div class="ev-title">${esc(e.title)}</div>
+          <span class="ev-badge ${e.type||'activity'}">${typeLbl(e.type)}</span>
+        </div>
+        <button class="del-btn" onclick="deleteEvent(${e.id},'${dKey}',this)" title="削除">🗑️</button>
+      </div>`;
+    });
+    if (evs.length === 0) h = `<div class="state-box">${emptyMsg || '予定はありません'}</div>`;
+    return h;
+  }
+
+  // ---- 今日ビュー ----
+  async function loadToday() {
+    const el = document.getElementById('todayContent');
+    el.innerHTML = loading();
+    try {
+      const events = await fetchEvents('今日', 'today-' + dateKey(today));
+      renderToday(el, events);
+    } catch(e) {
+      el.innerHTML = err(e.message);
+    }
+  }
+
+  function renderToday(el, events) {
+    const tk  = dateKey(today);
+    const evs = events.filter(ev => evDateKey(ev) === tk || evDateKey(ev) === null);
+    let h = `<div class="section-label">${today.getMonth()+1}月${today.getDate()}日 (${DOW[today.getDay()]}) の予定</div>`;
+    h += renderEvCards(evs, tk, '今日の予定はありません');
+    el.innerHTML = h;
+  }
+
+  // ---- 週間ビュー ----
+  async function loadWeek() {
+    const sun = weekSunday(weekOffset);
+    const sat = new Date(sun); sat.setDate(sat.getDate() + 6);
+
+    const y1=sun.getFullYear(), m1=sun.getMonth()+1, d1=sun.getDate();
+    const y2=sat.getFullYear(), m2=sat.getMonth()+1, d2=sat.getDate();
+    const period  = `${y1}年${m1}月${d1}日から${y2}年${m2}月${d2}日`;
+    const cacheKey = 'week-' + dateKey(sun);
+
+    document.getElementById('weekRange').textContent = `${m1}/${d1} ～ ${m2}/${d2}`;
+    const grid = document.getElementById('weekGrid');
+    grid.innerHTML = `<div class="state-box" style="grid-column:1/-1">${loading()}</div>`;
+
+    try {
+      const events = await fetchEvents(period, cacheKey);
+      renderWeek(grid, sun, events);
+    } catch(e) {
+      grid.innerHTML = `<div class="err-box" style="grid-column:1/-1">取得に失敗しました: ${esc(e.message)}</div>`;
+    }
+  }
+
+  function renderWeek(grid, sun, events) {
+    weekEvMap = byDateMap(events);
+    const tk  = dateKey(today);
+    let h = '';
+    for (let i = 0; i < 7; i++) {
+      const d   = new Date(sun); d.setDate(d.getDate() + i);
+      const key = dateKey(d);
+      const dow = d.getDay();
+      const isTd = key === tk;
+      const evs  = weekEvMap[key] || [];
+      const numC = `wd-num${isTd?' today':''}${dow===0?' sun':dow===6?' sat':''}`;
+      h += `<div class="wd-col" data-date="${key}" onclick="openDayDrawer('${key}')">
+        <div class="wd-name">${DOW[dow]}</div>
+        <div class="${numC}">${d.getDate()}</div>
+        <div class="wd-events">`;
+      evs.slice(0,3).forEach(ev => {
+        h += `<span class="wd-pill ${ev.type||'activity'}" title="${esc(ev.title)}">${esc(ev.title)}</span>`;
+      });
+      if (evs.length > 3) h += `<div class="wd-more">+${evs.length-3}</div>`;
+      h += `</div></div>`;
+    }
+    grid.innerHTML = h;
+  }
+
+  // ---- 月間ビュー ----
+  async function loadMonth() {
+    document.getElementById('monthLabel').textContent = `${calYear}年 ${calMonth+1}月`;
+    const grid = document.getElementById('monthGrid');
+    grid.innerHTML = `<div class="state-box" style="grid-column:1/-1">${loading()}</div>`;
+    const cacheKey = `month-${calYear}-${calMonth}`;
+    try {
+      const events = await fetchEvents(`${calYear}年${calMonth+1}月`, cacheKey);
+      renderMonth(grid, events);
+    } catch(e) {
+      grid.innerHTML = `<div class="err-box" style="grid-column:1/-1">取得に失敗しました: ${esc(e.message)}</div>`;
+    }
+  }
+
+  function renderMonth(grid, events) {
+    monthEvMap     = byDateMap(events);
+    const tk       = dateKey(today);
+    const firstDow = new Date(calYear, calMonth, 1).getDay();
+    const daysM    = new Date(calYear, calMonth+1, 0).getDate();
+    const daysP    = new Date(calYear, calMonth, 0).getDate();
+    let h = '';
+
+    for (let i = 0; i < firstDow; i++) {
+      h += `<div class="mo-cell other-m"><div class="mo-num">${daysP - firstDow + 1 + i}</div></div>`;
+    }
+    for (let d = 1; d <= daysM; d++) {
+      const dt  = new Date(calYear, calMonth, d);
+      const key = dateKey(dt);
+      const dow = dt.getDay();
+      let cls = 'mo-cell';
+      if (key === tk) cls += ' today-c';
+      if (dow === 0)  cls += ' sun-c';
+      if (dow === 6)  cls += ' sat-c';
+      h += `<div class="${cls}" data-date="${key}" onclick="openDayDrawer('${key}')"><div class="mo-num">${d}</div>`;
+      const evs = monthEvMap[key] || [];
+      evs.slice(0,2).forEach(ev => {
+        h += `<span class="mo-pill ${ev.type||'activity'}">${esc(ev.title)}</span>`;
+      });
+      if (evs.length > 2) h += `<div class="mo-more">+${evs.length-2}</div>`;
+      h += `</div>`;
+    }
+    const tail = (7 - ((firstDow + daysM) % 7)) % 7;
+    for (let i = 1; i <= tail; i++) {
+      h += `<div class="mo-cell other-m"><div class="mo-num">${i}</div></div>`;
+    }
+    grid.innerHTML = h;
+  }
+
+  // ---- 共通 ----
+  function loading() {
+    return `<div class="state-box"><div class="spinner"></div><br>読み込み中…</div>`;
+  }
+  function err(msg) {
+    return `<div class="err-box">取得に失敗しました: ${esc(msg)}</div>`;
+  }
+
+  // ---- デイドロワー ----
+  function openDayDrawer(key) {
+    const evs = weekEvMap[key] || monthEvMap[key] || [];
+    const [y, m, d] = key.split('-');
+    const dt  = new Date(+y, +m-1, +d);
+    document.getElementById('drawerTitle').textContent =
+      `${+m}月${+d}日 (${DOW[dt.getDay()]})`;
+    document.getElementById('drawerBody').innerHTML =
+      renderEvCards(evs, key, 'この日の予定はありません');
+    document.getElementById('drawerOverlay').classList.add('open');
+    document.getElementById('dayDrawer').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDayDrawer() {
+    document.getElementById('drawerOverlay').classList.remove('open');
+    document.getElementById('dayDrawer').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // ---- 削除 ----
+  async function deleteEvent(eventId, dKey, btn) {
+    const card = btn.closest('.ev-card');
+    const title = card.querySelector('.ev-title')?.textContent || '予定';
+    if (!confirm(`「${title}」を削除しますか？`)) return;
+
+    btn.disabled = true;
+    btn.textContent = '…';
+
+    try {
+      const res = await fetch(`${API}/events/${eventId}/`, {
+        method:  'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ user_id: USER_ID }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.message || '削除に失敗しました'); }
+
+      // キャッシュから除去
+      Object.keys(cache).forEach(k => {
+        if (Array.isArray(cache[k])) cache[k] = cache[k].filter(ev => ev.id !== eventId);
+      });
+      if (weekEvMap[dKey])  weekEvMap[dKey]  = weekEvMap[dKey].filter(ev => ev.id !== eventId);
+      if (monthEvMap[dKey]) monthEvMap[dKey] = monthEvMap[dKey].filter(ev => ev.id !== eventId);
+
+      // カードをフェードアウト
+      card.style.transition = 'opacity .2s, max-height .3s';
+      card.style.opacity = '0';
+      card.style.maxHeight = '0';
+      card.style.overflow  = 'hidden';
+      setTimeout(() => {
+        card.remove();
+        // ドロワーが空になったら表示更新
+        const body = document.getElementById('drawerBody');
+        if (body && !body.querySelector('.ev-card')) {
+          body.innerHTML = `<div class="state-box">この日の予定はありません</div>`;
+        }
+      }, 300);
+
+      // グリッドのセルを更新
+      updateGridCell(dKey);
+
+      // 今日ビューも更新
+      if (dKey === dateKey(today)) {
+        const tc = document.getElementById('todayContent');
+        const evs = (cache['today-' + dateKey(today)] || []).filter(ev => evDateKey(ev) === dKey);
+        if (tc) {
+          const lbl = tc.querySelector('.section-label');
+          const lblHtml = lbl ? lbl.outerHTML : '';
+          tc.innerHTML = lblHtml + renderEvCards(evs, dKey, '今日の予定はありません');
+        }
+      }
+    } catch(e) {
+      btn.disabled = false;
+      btn.textContent = '🗑️';
+      alert('削除に失敗しました: ' + e.message);
+    }
+  }
+
+  function updateGridCell(key) {
+    // 週間グリッド
+    const wCol = document.querySelector(`#weekGrid [data-date="${key}"]`);
+    if (wCol) {
+      const evContainer = wCol.querySelector('.wd-events');
+      if (evContainer) {
+        const evs = weekEvMap[key] || [];
+        let h = '';
+        evs.slice(0,3).forEach(ev => {
+          h += `<span class="wd-pill ${ev.type||'activity'}">${esc(ev.title)}</span>`;
+        });
+        if (evs.length > 3) h += `<div class="wd-more">+${evs.length-3}</div>`;
+        evContainer.innerHTML = h;
+      }
+    }
+    // 月間グリッド
+    const mCell = document.querySelector(`#monthGrid [data-date="${key}"]`);
+    if (mCell) {
+      mCell.querySelectorAll('.mo-pill, .mo-more').forEach(el => el.remove());
+      const evs = monthEvMap[key] || [];
+      evs.slice(0,2).forEach(ev => {
+        const pill = document.createElement('span');
+        pill.className = `mo-pill ${ev.type||'activity'}`;
+        pill.textContent = ev.title;
+        mCell.appendChild(pill);
+      });
+      if (evs.length > 2) {
+        const more = document.createElement('div');
+        more.className = 'mo-more';
+        more.textContent = `+${evs.length-2}`;
+        mCell.appendChild(more);
+      }
+    }
+  }
+
+  // ---- タブ切り替え ----
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b===btn));
+      document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id===tab+'View'));
+      if (!loaded[tab]) {
+        loaded[tab] = true;
+        if (tab==='today') loadToday();
+        if (tab==='week')  loadWeek();
+        if (tab==='month') loadMonth();
+      }
+    });
+  });
+
+  // 週ナビ
+  document.getElementById('weekPrev').addEventListener('click', () => { weekOffset--; loadWeek(); });
+  document.getElementById('weekNext').addEventListener('click', () => { weekOffset++; loadWeek(); });
+
+  // 月ナビ
+  document.getElementById('monthPrev').addEventListener('click', () => {
+    if (--calMonth < 0) { calMonth = 11; calYear--; }
+    loadMonth();
+  });
+  document.getElementById('monthNext').addEventListener('click', () => {
+    if (++calMonth > 11) { calMonth = 0; calYear++; }
+    loadMonth();
+  });
+
+  // 初期ロード（今日タブ）
+  loaded['today'] = true;
+  loadToday();
+</script>
+</body>
+</html>

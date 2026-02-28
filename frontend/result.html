@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>検索結果 - スケジュール</title>
+  <style>
+    :root {
+      --main:      #4A90E2;
+      --main-dark: #357ABD;
+      --main-light:#E8F2FC;
+      --bg:        #F5F5F5;
+      --white:     #FFFFFF;
+      --text:      #333333;
+      --sub:       #888888;
+      --border:    #E0E0E0;
+      --nav-h:     60px;
+      --hdr-h:     54px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    /* ========= ヘッダー ========= */
+    .hdr {
+      position: fixed; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      height: var(--hdr-h);
+      background: var(--main);
+      display: flex; align-items: center;
+      padding: 0 16px; gap: 10px;
+      z-index: 200;
+      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+    .back-btn {
+      background: rgba(255,255,255,.2);
+      border: none; border-radius: 8px;
+      width: 32px; height: 32px;
+      color: #fff; font-size: 1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background .15s;
+    }
+    .back-btn:active { background: rgba(255,255,255,.35); }
+    .hdr h1 { font-size: 1.05rem; font-weight: 700; color: #fff; }
+
+    /* ========= コンテンツ ========= */
+    .content {
+      padding-top: calc(var(--hdr-h) + 12px);
+      padding-bottom: calc(var(--nav-h) + 20px);
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+
+    /* ========= 検索情報バナー ========= */
+    .query-banner {
+      background: var(--main-light);
+      border: 1px solid #bdd7f5;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+    .query-label {
+      font-size: 0.7rem; font-weight: 600;
+      color: var(--main); margin-bottom: 4px;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .query-text {
+      font-size: 0.92rem; font-weight: 600; color: #1d4ed8;
+    }
+    .result-count {
+      margin-top: 6px;
+      font-size: 0.78rem; color: var(--sub);
+    }
+
+    /* ========= 結果リスト ========= */
+    .result-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .ev-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex; gap: 10px; align-items: flex-start;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      border-left: 4px solid transparent;
+    }
+    .ev-card.activity { border-left-color: #4A90E2; }
+    .ev-card.deadline { border-left-color: #E25C5C; }
+    .ev-card.block    { border-left-color: #E2A44A; }
+
+    .ev-left { min-width: 58px; }
+    .ev-date {
+      font-size: 0.7rem; font-weight: 700; color: var(--main);
+      margin-bottom: 1px;
+    }
+    .ev-time {
+      font-size: 0.68rem; color: var(--sub); line-height: 1.4;
+    }
+
+    .ev-right { flex: 1; min-width: 0; }
+    .ev-title {
+      font-size: 0.92rem; font-weight: 600;
+      margin-bottom: 4px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .ev-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .badge {
+      display: inline-block; font-size: 0.65rem;
+      padding: 1px 7px; border-radius: 4px; font-weight: 500;
+    }
+    .badge.activity { background: #dbeafe; color: #1d4ed8; }
+    .badge.deadline { background: #fee2e2; color: #b91c1c; }
+    .badge.block    { background: #fef3c7; color: #92400e; }
+    .badge.allday   { background: #e0e7ff; color: #3730a3; }
+    .badge.priority { background: #f3f4f6; color: #374151; }
+
+    /* ========= 削除ボタン ========= */
+    .del-btn {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: #ccc;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 2px 5px;
+      border-radius: 5px;
+      transition: color .15s, background .15s;
+      line-height: 1;
+      align-self: flex-start;
+    }
+    .del-btn:hover { color: #ef4444; background: #fee2e2; }
+
+    /* ========= グループヘッダー ========= */
+    .group-header {
+      font-size: 0.75rem; font-weight: 700;
+      color: var(--sub);
+      padding: 6px 4px 4px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 6px; margin-top: 10px;
+    }
+
+    /* ========= 状態表示 ========= */
+    .state-box {
+      text-align: center; padding: 50px 20px;
+      color: var(--sub); font-size: 0.9rem;
+    }
+    .state-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .state-box p { margin-top: 4px; }
+
+    .err-box {
+      background: #fee2e2; color: #b91c1c;
+      padding: 12px 14px; border-radius: 10px;
+      font-size: 0.82rem; line-height: 1.5;
+    }
+
+    /* ========= 再検索ボタン ========= */
+    .btn-back {
+      display: block; width: 100%;
+      margin-top: 20px; padding: 13px;
+      background: var(--white);
+      border: 1.5px solid var(--main);
+      border-radius: 10px;
+      color: var(--main);
+      font-size: 0.9rem; font-weight: 700;
+      text-align: center; text-decoration: none;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-back:hover { background: var(--main-light); }
+
+    /* ========= 下部ナビ ========= */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      height: var(--nav-h);
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      display: flex; z-index: 200;
+      box-shadow: 0 -2px 8px rgba(0,0,0,.06);
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 2px;
+      text-decoration: none; color: var(--sub);
+      font-size: 0.65rem; font-weight: 500;
+      transition: color .15s;
+    }
+    .nav-item.active { color: var(--main); }
+    .nav-icon { font-size: 1.25rem; line-height: 1; }
+  </style>
+</head>
+<body>
+
+<header class="hdr">
+  <button class="back-btn" onclick="history.back()">&#8592;</button>
+  <h1>AI 検索結果</h1>
+</header>
+
+<main class="content" id="mainContent">
+  <!-- JS で描画 -->
+</main>
+
+<nav class="bottom-nav">
+  <a href="/home/" class="nav-item">
+    <span class="nav-icon">🏠</span><span>ホーム</span>
+  </a>
+  <a href="/input/" class="nav-item">
+    <span class="nav-icon">➕</span><span>入力</span>
+  </a>
+  <a href="/result/" class="nav-item active">
+    <span class="nav-icon">🔍</span><span>結果</span>
+  </a>
+</nav>
+
+<script>
+  const API_SCHEDULE = 'http://localhost:8000/api/schedule';
+  const USER_ID      = 'user1';
+
+  // ---- データ読み込み ----
+  const query   = sessionStorage.getItem('search_query')   || '';
+  const rawData = sessionStorage.getItem('search_results') || '[]';
+  const ts      = parseInt(sessionStorage.getItem('search_ts') || '0');
+  let events = [];
+  try { events = JSON.parse(rawData); } catch(e) { events = []; }
+
+  const main = document.getElementById('mainContent');
+
+  // ---- ユーティリティ ----
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function evDate(ev) { return ev.start ? ev.start.slice(0,10) : null; }
+  function fmtDate(s) {
+    if (!s) return '';
+    const [y,m,d] = s.split('-');
+    const dt = new Date(+y, +m-1, +d);
+    const dow = ['日','月','火','水','木','金','土'][dt.getDay()];
+    return `${+m}/${+d} (${dow})`;
+  }
+  function fmtTime(s) { return s && s.includes(' ') ? s.split(' ')[1] : ''; }
+  function typeLbl(t) {
+    return ({activity:'アクティビティ', deadline:'締切', block:'ブロック'})[t] || t || '不明';
+  }
+  function priorityLbl(p) {
+    return ({1:'最重要',2:'重要',3:'普通',4:'低',5:'最低'})[p] || '';
+  }
+
+  // ---- 検索結果なし / クエリなし ----
+  if (!query) {
+    main.innerHTML = `
+      <div class="state-box">
+        <div class="state-icon">🔍</div>
+        <strong>検索結果がありません</strong>
+        <p>入力画面から検索してください</p>
+      </div>
+      <a href="/input/" class="btn-back">← 入力画面へ</a>`;
+    stopHere();
+  }
+
+  function stopHere() { throw new Error('stop'); }
+
+  // ---- 検索結果の期間を推定 ----
+  function getDateRange(events) {
+    const dates = events.map(ev => evDate(ev)).filter(Boolean).sort();
+    if (!dates.length) return '';
+    const first = fmtDate(dates[0]);
+    const last  = fmtDate(dates[dates.length - 1]);
+    return first === last ? first : `${first} 〜 ${last}`;
+  }
+
+  // ---- 日付でグループ化 ----
+  function groupByDate(events) {
+    const groups = {};
+    events.forEach(ev => {
+      const k = evDate(ev) || '日付未定';
+      (groups[k] = groups[k] || []).push(ev);
+    });
+    return groups;
+  }
+
+  // ---- 描画 ----
+  try {
+    const range  = getDateRange(events);
+    const groups = groupByDate(events);
+    const count  = events.length;
+
+    let html = '';
+
+    // 検索クエリバナー
+    html += `<div class="query-banner">
+      <div class="query-label">検索クエリ</div>
+      <div class="query-text">${esc(query)}</div>
+      <div class="result-count">`;
+    if (range) html += `📅 ${esc(range)} &ensp;|&ensp; `;
+    html += `${count} 件の予定が見つかりました</div>
+    </div>`;
+
+    if (count === 0) {
+      html += `<div class="state-box">
+        <div class="state-icon">📭</div>
+        <strong>該当する予定はありません</strong>
+        <p>別の期間や条件で検索してみてください</p>
+      </div>`;
+    } else {
+      html += `<div class="result-list">`;
+
+      const sortedDates = Object.keys(groups).sort();
+      sortedDates.forEach(dateStr => {
+        const dayEvents = groups[dateStr];
+        html += `<div class="group-header">📅 ${dateStr === '日付未定' ? '日付未定' : fmtDate(dateStr)}</div>`;
+
+        dayEvents.forEach(ev => {
+          const type = ev.type || 'activity';
+          const st   = fmtTime(ev.start);
+          const en   = fmtTime(ev.end);
+          const pLbl = priorityLbl(ev.priority);
+
+          html += `<div class="ev-card ${type}">
+            <div class="ev-left">
+              <div class="ev-date">${dateStr === '日付未定' ? '未定' : fmtDate(dateStr)}</div>
+              <div class="ev-time">`;
+          if (ev.is_all_day) {
+            html += `終日`;
+          } else if (st) {
+            html += esc(st);
+            if (en) html += `<br>${esc(en)}`;
+          }
+          html += `</div>
+            </div>
+            <div class="ev-right">
+              <div class="ev-title">${esc(ev.title)}</div>
+              <div class="ev-meta">
+                <span class="badge ${type}">${typeLbl(type)}</span>`;
+          if (ev.is_all_day) html += `<span class="badge allday">終日</span>`;
+          if (pLbl) html += `<span class="badge priority">${esc(pLbl)}</span>`;
+          if (ev.category && ev.category.length) {
+            ev.category.slice(0,2).forEach(c => {
+              html += `<span class="badge priority">${esc(c)}</span>`;
+            });
+          }
+          html += `</div>
+            </div>
+            <button class="del-btn" onclick="deleteEvent(${ev.id},this)" title="削除">✕</button>
+          </div>`;
+        });
+      });
+
+      html += `</div>`;
+    }
+
+    // 戻るボタン
+    html += `<a href="/input/" class="btn-back">← 入力画面に戻る</a>`;
+
+    main.innerHTML = html;
+  } catch(e) {
+    if (e.message !== 'stop') {
+      main.innerHTML = `<div class="err-box">
+        ❌ 表示中にエラーが発生しました: ${esc(e.message)}
+      </div>
+      <a href="/input/" class="btn-back">← 入力画面に戻る</a>`;
+    }
+  }
+
+  // ---- 削除 ----
+  async function deleteEvent(eventId, btn) {
+    const card  = btn.closest('.ev-card');
+    const title = card.querySelector('.ev-title')?.textContent || '予定';
+    if (!confirm(`「${title}」を削除しますか？`)) return;
+
+    btn.disabled = true;
+    btn.textContent = '…';
+
+    try {
+      const res = await fetch(`${API_SCHEDULE}/events/${eventId}/`, {
+        method:  'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ user_id: USER_ID }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.message || '削除に失敗しました');
+      }
+
+      // フェードアウトしてから削除
+      card.style.transition = 'opacity .3s';
+      card.style.opacity = '0';
+      setTimeout(() => {
+        card.style.transition = 'max-height .25s, padding .25s, margin .25s';
+        card.style.overflow = 'hidden';
+        card.style.maxHeight = card.offsetHeight + 'px';
+        requestAnimationFrame(() => {
+          card.style.maxHeight = '0';
+          card.style.paddingTop = '0';
+          card.style.paddingBottom = '0';
+          card.style.marginTop = '0';
+          card.style.marginBottom = '0';
+        });
+        setTimeout(() => card.remove(), 260);
+      }, 300);
+
+      // sessionStorage のデータも更新
+      events = events.filter(ev => ev.id !== eventId);
+      sessionStorage.setItem('search_results', JSON.stringify(events));
+
+    } catch (e) {
+      alert(e.message);
+      btn.disabled = false;
+      btn.textContent = '✕';
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ログイン - スケジュールアプリ</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .logo h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    .logo p {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 16px;
+    }
+
+    input:focus {
+      border-color: #4a6cf7;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: #4a6cf7;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+      margin-top: 4px;
+    }
+
+    .btn-primary:hover    { background: #3a5ae0; }
+    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .msg {
+      font-size: 0.82rem;
+      padding: 9px 12px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    .msg.error   { background: #fee2e2; color: #991b1b; display: block; }
+    .msg.success { background: #dcfce7; color: #166534; display: block; }
+    .msg.loading { background: #e0e7ff; color: #3730a3; display: block; }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e5e7eb;
+    }
+
+    .divider span {
+      font-size: 0.78rem;
+      color: #aaa;
+      white-space: nowrap;
+    }
+
+    /* Google ボタンを中央寄せ */
+    .google-btn-wrap {
+      display: flex;
+      justify-content: center;
+    }
+
+    .auth-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .auth-link a {
+      color: #4a6cf7;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .auth-link a:hover { text-decoration: underline; }
+
+    .spinner {
+      display: inline-block;
+      width: 13px; height: 13px;
+      border: 2px solid #bbb;
+      border-top-color: #4a6cf7;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo">
+    <h1>スケジュールアプリ</h1>
+    <p>予定を AI が自動整理します</p>
+  </div>
+
+  <div class="card">
+    <h2>ログイン</h2>
+
+    <div id="msg" class="msg"></div>
+
+    <form id="loginForm">
+      <label for="email">メールアドレス</label>
+      <input type="email" id="email" placeholder="example@mail.com" required autocomplete="email">
+
+      <label for="password">パスワード</label>
+      <input type="password" id="password" placeholder="パスワードを入力" required autocomplete="current-password">
+
+      <button class="btn-primary" type="submit" id="loginBtn">ログイン</button>
+    </form>
+
+    <!-- Google サインイン -->
+    <div class="divider"><span>または</span></div>
+
+    <div class="google-btn-wrap">
+      <!-- Google Client ID は Django テンプレートで埋め込み -->
+      <div id="g_id_onload"
+           data-client_id="{{ google_client_id }}"
+           data-callback="handleGoogleCallback"
+           data-auto_select="false">
+      </div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-shape="rectangular"
+           data-theme="outline"
+           data-text="signin_with"
+           data-size="large"
+           data-locale="ja"
+           data-width="340">
+      </div>
+    </div>
+
+    <p class="auth-link">
+      アカウントをお持ちでない方は <a href="/register/">新規登録</a>
+    </p>
+  </div>
+</div>
+
+<script>
+  const API_BASE = '/api/auth';
+
+  // 既にログイン済みならカレンダーへ
+  if (localStorage.getItem('access_token')) {
+    window.location.replace('/home/');
+  }
+
+  // メール & パスワード ログイン
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const btn      = document.getElementById('loginBtn');
+
+    btn.disabled = true;
+    showMsg('loading', '<span class="spinner"></span>ログイン中…');
+
+    try {
+      const res  = await fetch(`${API_BASE}/login/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'ログインに失敗しました');
+
+      saveSession(data);
+      window.location.replace('/home/');
+    } catch (err) {
+      showMsg('error', err.message);
+      btn.disabled = false;
+    }
+  });
+
+  // Google コールバック
+  function handleGoogleCallback(response) {
+    showMsg('loading', '<span class="spinner"></span>Google 認証中…');
+
+    fetch(`${API_BASE}/google/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) throw new Error(data.error);
+        saveSession(data);
+        window.location.replace('/home/');
+      })
+      .catch(err => showMsg('error', err.message));
+  }
+
+  function saveSession(data) {
+    localStorage.setItem('access_token',  data.tokens.access);
+    localStorage.setItem('refresh_token', data.tokens.refresh);
+    localStorage.setItem('user_id',       String(data.user.id));
+    localStorage.setItem('user_name',     data.user.username);
+    localStorage.setItem('user_email',    data.user.email);
+  }
+
+  function showMsg(type, html) {
+    const el = document.getElementById('msg');
+    el.className = `msg ${type}`;
+    el.innerHTML = html;
+    el.style.display = 'block';
+  }
+</script>
+</body>
+</html>
