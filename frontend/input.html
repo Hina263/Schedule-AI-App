@@ -65,10 +65,8 @@
     .card-icon {
       width: 34px; height: 34px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem;
+      font-size: 1.1rem; background: #dbeafe;
     }
-    .card-icon.add    { background: #dbeafe; }
-    .card-icon.search { background: #f3e8ff; }
     .card-title {
       font-size: 0.98rem; font-weight: 700; color: var(--text);
     }
@@ -76,16 +74,19 @@
       font-size: 0.78rem; color: var(--sub); margin-top: 1px;
     }
 
-    /* ========= フォーム要素 ========= */
+    /* ========= テキストエリア + マイク ========= */
+    .input-wrap {
+      position: relative;
+    }
     textarea {
       width: 100%;
       border: 1.5px solid var(--border);
       border-radius: 10px;
-      padding: 12px 13px;
+      padding: 12px 50px 12px 13px;
       font-size: 0.9rem;
       font-family: inherit;
       resize: none;
-      min-height: 82px;
+      min-height: 90px;
       line-height: 1.55;
       outline: none;
       color: var(--text);
@@ -94,14 +95,62 @@
     }
     textarea:focus { border-color: var(--main); background: var(--white); }
 
+    .mic-btn {
+      position: absolute;
+      bottom: 10px; right: 10px;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: var(--bg);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, box-shadow .15s;
+      color: var(--sub);
+    }
+    .mic-btn:hover  { background: #e0e7ff; color: var(--main); }
+    .mic-btn.active {
+      background: #fee2e2;
+      color: #dc2626;
+      animation: pulse 1s infinite;
+      box-shadow: 0 0 0 4px rgba(220,38,38,.15);
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 2px rgba(220,38,38,.2); }
+      50%      { box-shadow: 0 0 0 6px rgba(220,38,38,.1); }
+    }
+
+    /* ========= ヒント ========= */
     .hint {
       font-size: 0.72rem; color: var(--sub);
-      margin-top: 6px; line-height: 1.5;
+      margin-top: 8px; line-height: 1.55;
     }
     .hint strong { color: #555; }
+    .hint-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .hint-chip {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.71rem;
+      color: #555;
+      line-height: 1.45;
+    }
+    .hint-chip .chip-label {
+      font-weight: 700;
+      font-size: 0.65rem;
+      color: var(--sub);
+      display: block;
+      margin-bottom: 2px;
+    }
 
+    /* ========= ボタン ========= */
     .btn-primary {
-      width: 100%; margin-top: 12px;
+      width: 100%; margin-top: 14px;
       padding: 13px;
       background: var(--main);
       color: #fff; border: none;
@@ -113,11 +162,6 @@
     }
     .btn-primary:hover    { background: var(--main-dark); }
     .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
-
-    .btn-search {
-      background: #7c3aed;
-    }
-    .btn-search:hover { background: #6d28d9; }
 
     /* ========= メッセージ ========= */
     .msg {
@@ -132,6 +176,7 @@
     .msg.error   { background: #fee2e2; color: #991b1b; display: block; }
     .msg.warning { background: #fef3c7; color: #92400e; display: block; }
     .msg.loading { background: #e0e7ff; color: #3730a3; display: block; }
+    .msg.info    { background: #f0f9ff; color: #0369a1; display: block; }
 
     /* ========= スピナー ========= */
     .spinner {
@@ -147,6 +192,63 @@
       border-top-color: #3730a3;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ========= Warning 確認ボタン ========= */
+    .warn-item { margin-bottom: 6px; }
+    .warn-btns { display: flex; gap: 8px; margin-top: 12px; }
+    .btn-yes {
+      flex: 1; padding: 9px 0;
+      background: #d97706; color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-yes:hover { background: #b45309; }
+    .btn-no {
+      flex: 1; padding: 9px 0;
+      background: none; color: #92400e;
+      border: 1.5px solid #d97706; border-radius: 8px;
+      font-size: 0.88rem; font-weight: 600; cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-no:hover { background: #fef3c7; }
+
+    /* ========= 検索結果カード ========= */
+    .result-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    }
+    .result-title {
+      font-size: 0.88rem; font-weight: 700;
+      color: var(--sub); margin-bottom: 10px;
+    }
+    .ev-item {
+      display: flex; gap: 8px; align-items: flex-start;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .ev-item:last-child { border-bottom: none; }
+    .ev-bar {
+      width: 3px; border-radius: 3px; align-self: stretch; flex-shrink: 0;
+      min-height: 36px;
+    }
+    .ev-bar.activity { background: #4A90E2; }
+    .ev-bar.deadline { background: #E25C5C; }
+    .ev-bar.block    { background: #E2A44A; }
+    .ev-info { flex: 1; min-width: 0; }
+    .ev-name {
+      font-size: 0.88rem; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ev-time-str {
+      font-size: 0.72rem; color: var(--sub); margin-top: 2px;
+    }
+    .ev-empty {
+      text-align: center; padding: 20px 0;
+      color: var(--sub); font-size: 0.85rem;
+    }
 
     /* ========= 下部ナビ ========= */
     .bottom-nav {
@@ -178,54 +280,50 @@
 
 <main class="content">
 
-  <!-- ===== 予定追加セクション ===== -->
+  <!-- ===== 統合入力カード ===== -->
   <div class="card">
     <div class="card-header">
-      <div class="card-icon add">📅</div>
+      <div class="card-icon">🤖</div>
       <div>
-        <div class="card-title">予定を追加</div>
-        <div class="card-desc">自然な言葉で入力してください</div>
+        <div class="card-title">AIアシスタント</div>
+        <div class="card-desc">追加・検索・変更・削除を自然な言葉で</div>
       </div>
     </div>
 
-    <textarea id="addInput" rows="3"
-      placeholder="例: 明日18時から1時間、プロジェクト会議&#10;例: 3/15 終日、資料提出締切"></textarea>
+    <div class="input-wrap">
+      <textarea id="cmdInput" rows="3"
+        placeholder="例: 明日18時から会議&#10;例: 今週の予定を教えて&#10;例: 3/4の会議を12時からに変更&#10;例: 明日の英語を削除して"></textarea>
+      <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="音声入力">🎤</button>
+    </div>
 
-    <p class="hint">
-      <strong>使い方:</strong> 日時・内容を自然な文章で書くと AI が自動判断します。<br>
-      種別 (アクティビティ/締切/ブロック) も認識します。
-    </p>
-
-    <div id="addMsg" class="msg"></div>
-
-    <button class="btn-primary" id="addBtn" onclick="addEvent()">
-      追加する
-    </button>
-  </div>
-
-  <!-- ===== AI検索セクション ===== -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-icon search">🔍</div>
-      <div>
-        <div class="card-title">AI 検索</div>
-        <div class="card-desc">期間・条件を自然な言葉で指定</div>
+    <div class="hint-grid">
+      <div class="hint-chip">
+        <span class="chip-label">➕ 追加</span>
+        明日18時から会議<br>3/15 資料提出締切
+      </div>
+      <div class="hint-chip">
+        <span class="chip-label">🔍 検索</span>
+        今週の予定は？<br>来月の締切まとめて
+      </div>
+      <div class="hint-chip">
+        <span class="chip-label">✏️ 変更</span>
+        3/4の会議を12時から<br>合宿の終わりを3/10に
+      </div>
+      <div class="hint-chip">
+        <span class="chip-label">🗑️ 削除</span>
+        明日の英語を削除<br>3/15の締切を消して
       </div>
     </div>
 
-    <textarea id="searchInput" rows="3"
-      placeholder="例: 3/10から一週間の予定を教えて&#10;例: 今月の締切をまとめて&#10;例: 来週の会議は何がある？"></textarea>
+    <div id="cmdMsg" class="msg"></div>
 
-    <p class="hint">
-      <strong>使い方:</strong> 調べたい期間や条件を入力すると、該当する予定を一覧表示します。
-    </p>
-
-    <div id="searchMsg" class="msg"></div>
-
-    <button class="btn-primary btn-search" id="searchBtn" onclick="searchEvents()">
-      検索する
+    <button class="btn-primary" id="cmdBtn" onclick="runCommand()">
+      実行する
     </button>
   </div>
+
+  <!-- ===== 検索結果表示エリア ===== -->
+  <div id="searchResults" style="display:none;"></div>
 
 </main>
 
@@ -239,27 +337,91 @@
   <a href="/result/" class="nav-item">
     <span class="nav-icon">🔍</span><span>結果</span>
   </a>
+  <a href="/account/" class="nav-item">
+    <span class="nav-icon">👤</span><span>アカウント</span>
+  </a>
 </nav>
 
 <script>
   const API_SCHEDULE = 'http://localhost:8000/api/schedule';
   const USER_ID      = 'user1';
 
-  // ---- 予定追加 ----
-  async function addEvent() {
-    const input = document.getElementById('addInput').value.trim();
-    if (!input) {
-      showMsg('addMsg', 'error', '予定の内容を入力してください');
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ---- 音声入力 ----
+  let recognition = null;
+  let isListening = false;
+
+  function toggleMic() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('このブラウザは音声入力に対応していません。Chrome をお試しください。');
       return;
     }
 
-    const btn = document.getElementById('addBtn');
+    if (isListening) {
+      recognition.stop();
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang        = 'ja-JP';
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    const micBtn = document.getElementById('micBtn');
+    const textarea = document.getElementById('cmdInput');
+
+    recognition.onstart = () => {
+      isListening = true;
+      micBtn.classList.add('active');
+      micBtn.title = '音声認識中…（クリックで停止）';
+    };
+
+    recognition.onresult = (e) => {
+      let transcript = '';
+      for (let i = 0; i < e.results.length; i++) {
+        transcript += e.results[i][0].transcript;
+      }
+      textarea.value = transcript;
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      micBtn.classList.remove('active');
+      micBtn.title = '音声入力';
+    };
+
+    recognition.onerror = (e) => {
+      isListening = false;
+      micBtn.classList.remove('active');
+      micBtn.title = '音声入力';
+      if (e.error !== 'no-speech') {
+        showMsg('cmdMsg', 'error', `🎤 音声認識エラー: ${e.error}`);
+      }
+    };
+
+    recognition.start();
+  }
+
+  // ---- 統合コマンド実行 ----
+  async function runCommand() {
+    const input = document.getElementById('cmdInput').value.trim();
+    if (!input) {
+      showMsg('cmdMsg', 'error', '入力内容を指定してください');
+      return;
+    }
+
+    const btn = document.getElementById('cmdBtn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> 追加中…';
-    showMsg('addMsg', 'loading', '<span class="spinner dark"></span> AIが予定を解析中です…');
+    btn.innerHTML = '<span class="spinner"></span> AIが解析中…';
+    showMsg('cmdMsg', 'loading', '<span class="spinner dark"></span> AIが解析中です…');
+    document.getElementById('searchResults').style.display = 'none';
 
     try {
-      const res  = await fetch(`${API_SCHEDULE}/add-event/`, {
+      const res  = await fetch(`${API_SCHEDULE}/command/`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ user_id: USER_ID, input }),
@@ -267,63 +429,215 @@
       const data = await res.json();
 
       if (!res.ok || data.status === 'error') {
-        throw new Error(data.message || '追加に失敗しました');
+        throw new Error(data.message || '実行に失敗しました');
       }
 
-      // 衝突警告チェック
-      const msg = data.message || '';
-      if (msg.includes('衝突') || msg.includes('重複') || msg.includes('conflict')) {
-        showMsg('addMsg', 'warning', `⚠️ スケジュールの衝突が検出されました:\n${msg}`);
-      } else {
-        showMsg('addMsg', 'success', '✅ 予定を追加しました！');
-        document.getElementById('addInput').value = '';
-        setTimeout(() => hideMsg('addMsg'), 4000);
-      }
+      handleResponse(data, input);
 
     } catch (e) {
-      showMsg('addMsg', 'error', `❌ ${e.message}`);
+      showMsg('cmdMsg', 'error', `❌ ${esc(e.message)}`);
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '追加する';
+      btn.innerHTML = '実行する';
     }
   }
 
-  // ---- AI検索 ----
-  async function searchEvents() {
-    const input = document.getElementById('searchInput').value.trim();
-    if (!input) {
-      showMsg('searchMsg', 'error', '検索する期間や条件を入力してください');
+  function handleResponse(data, originalInput) {
+    // 追加成功
+    if (data.status === 'success' && data.action === 'add') {
+      showMsg('cmdMsg', 'success', `✅ 「${esc(data.event?.title || '')}」を追加しました！`);
+      document.getElementById('cmdInput').value = '';
+      setTimeout(() => hideMsg('cmdMsg'), 4000);
       return;
     }
 
-    const btn = document.getElementById('searchBtn');
+    // 検索結果
+    if (data.status === 'success' && data.action === 'search') {
+      showMsg('cmdMsg', 'success', `🔍 「${esc(data.period)}」の予定`);
+      renderSearchResults(data.events || [], data.period);
+      return;
+    }
+
+    // 変更・削除成功
+    if (data.status === 'success' && (data.action === 'update' || data.action === 'delete')) {
+      const icon = data.action === 'delete' ? '🗑️' : '✅';
+      showMsg('cmdMsg', 'success', `${icon} ${esc(data.message)}`);
+      document.getElementById('cmdInput').value = '';
+      setTimeout(() => hideMsg('cmdMsg'), 5000);
+      return;
+    }
+
+    // 時間重複
+    if (data.status === 'conflict') {
+      const lines = (data.conflicts || [])
+        .map(c => `<div class="warn-item">🚫 ${esc(c.warning_message || c.title)}</div>`)
+        .join('');
+      showMsg('cmdMsg', 'error', `<strong>時間が重複する予定があります</strong><br>${lines}`);
+      return;
+    }
+
+    // 警告（確認）
+    if (data.status === 'warning') {
+      window._pendingEvent = data.proposed_event;
+      const lines = (data.warnings || [])
+        .map(w => `<div class="warn-item">⚠️ ${esc(w.warning_message || w.title)}</div>`)
+        .join('');
+      showMsg('cmdMsg', 'warning',
+        `${lines}<div class="warn-btns">
+          <button class="btn-yes" onclick="forceAdd()">はい、追加する</button>
+          <button class="btn-no"  onclick="cancelWarning()">キャンセル</button>
+        </div>`
+      );
+      return;
+    }
+
+    // 複数マッチ
+    if (data.status === 'multiple') {
+      window._modifyIntent  = data.intent;
+      window._modifyChanges = data.changes || {};
+
+      const actionLbl = data.intent === 'delete' ? '削除' : '変更';
+      let html = `<strong>🔍 ${esc(data.message)}</strong>`;
+      html += `<div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">`;
+      data.events.forEach(ev => {
+        const dt  = ev.start ? ev.start.slice(0, 10)  : '';
+        const st  = ev.start ? ev.start.slice(11, 16) : '';
+        const en  = ev.end   ? ev.end.slice(11, 16)   : '';
+        const timeStr = ev.is_all_day ? '終日' : (st + (en ? `〜${en}` : ''));
+        html += `<div style="display:flex;align-items:center;justify-content:space-between;
+                             padding:8px 10px;background:#fff;border-radius:8px;
+                             border:1px solid #e0e0e0;">
+          <div>
+            <div style="font-size:0.88rem;font-weight:600;">${esc(ev.title)}</div>
+            <div style="font-size:0.72rem;color:#888;">${esc(dt)} ${esc(timeStr)}</div>
+          </div>
+          <button onclick="confirmModify(${ev.id})"
+            style="padding:6px 12px;background:#0d9488;color:#fff;border:none;
+                   border-radius:6px;font-size:0.8rem;font-weight:700;cursor:pointer;">
+            ${actionLbl}
+          </button>
+        </div>`;
+      });
+      html += `</div>`;
+      html += `<div style="margin-top:8px;text-align:right;">
+        <button onclick="hideMsg('cmdMsg')"
+          style="font-size:0.78rem;color:#888;background:none;border:none;cursor:pointer;">
+          キャンセル
+        </button>
+      </div>`;
+      showMsg('cmdMsg', 'warning', html);
+      return;
+    }
+
+    // 見つからない
+    if (data.status === 'not_found') {
+      showMsg('cmdMsg', 'warning', `🔍 ${esc(data.message)}`);
+      return;
+    }
+
+    // その他のエラー
+    showMsg('cmdMsg', 'error', `❌ ${esc(data.message || '不明なエラーが発生しました')}`);
+  }
+
+  // ---- 検索結果レンダリング ----
+  function renderSearchResults(events, period) {
+    const container = document.getElementById('searchResults');
+    if (events.length === 0) {
+      container.innerHTML = `<div class="result-card">
+        <div class="result-title">🔍 ${esc(period)} の予定</div>
+        <div class="ev-empty">予定はありません</div>
+      </div>`;
+      container.style.display = 'block';
+      return;
+    }
+
+    let html = `<div class="result-card">
+      <div class="result-title">🔍 ${esc(period)} の予定（${events.length}件）</div>`;
+    events.forEach(ev => {
+      const dt  = ev.start ? ev.start.slice(0, 10)  : '';
+      const st  = ev.start ? ev.start.slice(11, 16) : '';
+      const en  = ev.end   ? ev.end.slice(11, 16)   : '';
+      const timeStr = ev.is_all_day ? '終日' : (st + (en ? ` 〜 ${en}` : ''));
+      html += `<div class="ev-item">
+        <div class="ev-bar ${esc(ev.type || 'activity')}"></div>
+        <div class="ev-info">
+          <div class="ev-name">${esc(ev.title)}</div>
+          <div class="ev-time-str">${esc(dt)} ${esc(timeStr)}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+    container.style.display = 'block';
+  }
+
+  // ---- 警告を無視して強制追加 ----
+  async function forceAdd() {
+    const eventData = window._pendingEvent;
+    if (!eventData) return;
+
+    const btn = document.getElementById('cmdBtn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> 検索中…';
-    showMsg('searchMsg', 'loading', '<span class="spinner dark"></span> AIが検索しています…');
+    btn.innerHTML = '<span class="spinner"></span> 追加中…';
+    showMsg('cmdMsg', 'loading', '<span class="spinner dark"></span> 追加中…');
 
     try {
-      const res  = await fetch(`${API_SCHEDULE}/get-events/`, {
+      const res  = await fetch(`${API_SCHEDULE}/command/`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ user_id: USER_ID, period: input }),
+        body:    JSON.stringify({ user_id: USER_ID, force_event: eventData }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.status === 'error') {
+        throw new Error(data.message || '追加に失敗しました');
+      }
+      showMsg('cmdMsg', 'success', `✅ 「${esc(data.event?.title || '')}」を追加しました！`);
+      document.getElementById('cmdInput').value = '';
+      window._pendingEvent = null;
+      setTimeout(() => hideMsg('cmdMsg'), 4000);
+    } catch (e) {
+      showMsg('cmdMsg', 'error', `❌ ${esc(e.message)}`);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '実行する';
+    }
+  }
+
+  function cancelWarning() {
+    window._pendingEvent = null;
+    hideMsg('cmdMsg');
+  }
+
+  // ---- 複数マッチ確定 ----
+  async function confirmModify(eventId) {
+    showMsg('cmdMsg', 'loading', '<span class="spinner dark"></span> 実行中…');
+
+    try {
+      const res  = await fetch(`${API_SCHEDULE}/command/`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          user_id         : USER_ID,
+          confirm_event_id: eventId,
+          intent          : window._modifyIntent,
+          changes         : window._modifyChanges,
+        }),
       });
       const data = await res.json();
 
       if (!res.ok || data.status === 'error') {
-        throw new Error(data.message || '検索に失敗しました');
+        throw new Error(data.message || '操作に失敗しました');
       }
 
-      // 結果を sessionStorage に保存して result.html へ遷移
-      sessionStorage.setItem('search_query',   input);
-      sessionStorage.setItem('search_results', JSON.stringify(data.events || []));
-      sessionStorage.setItem('search_ts',      Date.now());
-
-      window.location.href = '/result/';
+      const icon = data.action === 'delete' ? '🗑️' : '✅';
+      showMsg('cmdMsg', 'success', `${icon} ${esc(data.message)}`);
+      document.getElementById('cmdInput').value = '';
+      window._modifyIntent  = null;
+      window._modifyChanges = null;
+      setTimeout(() => hideMsg('cmdMsg'), 5000);
 
     } catch (e) {
-      showMsg('searchMsg', 'error', `❌ ${e.message}`);
-      btn.disabled = false;
-      btn.innerHTML = '検索する';
+      showMsg('cmdMsg', 'error', `❌ ${esc(e.message)}`);
     }
   }
 
@@ -338,8 +652,6 @@
     const el = document.getElementById(id);
     el.style.display = 'none';
   }
-
-
 </script>
 </body>
 </html>

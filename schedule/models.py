@@ -47,3 +47,35 @@ class Event(models.Model):
     
     def __str__(self):
         return f"{self.title} ({self.start_datetime})"
+
+
+class UserSettings(models.Model):
+
+    WARN_CHOICES = [
+        ('gentle',   '優しい'),
+        ('standard', '標準'),
+        ('strict',   '厳しめ'),
+    ]
+
+    user_id                     = models.CharField(max_length=100, unique=True, default='default_user')
+    default_duration_hours      = models.IntegerField(default=1)
+    warning_level               = models.CharField(max_length=20, choices=WARN_CHOICES, default='standard')
+    remind_minutes_before       = models.IntegerField(null=True, blank=True)
+    remind_day_before           = models.BooleanField(default=False)
+    remind_days_before_deadline = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'user_settings'
+
+    def __str__(self):
+        return f"UserSettings({self.user_id})"
+
+    def to_dict(self):
+        return {
+            'user_id'                    : self.user_id,
+            'default_duration_hours'     : self.default_duration_hours,
+            'warning_level'              : self.warning_level,
+            'remind_minutes_before'      : self.remind_minutes_before,
+            'remind_day_before'          : self.remind_day_before,
+            'remind_days_before_deadline': self.remind_days_before_deadline,
+        }

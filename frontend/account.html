@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>アカウント - スケジュール</title>
+  <style>
+    :root {
+      --main:      #4A90E2;
+      --main-dark: #357ABD;
+      --bg:        #F5F5F5;
+      --white:     #FFFFFF;
+      --text:      #333333;
+      --sub:       #888888;
+      --border:    #E0E0E0;
+      --nav-h:     60px;
+      --hdr-h:     54px;
+      --danger:    #EF4444;
+      --danger-dk: #DC2626;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    /* ========= ヘッダー ========= */
+    .hdr {
+      position: fixed; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      height: var(--hdr-h);
+      background: var(--main);
+      display: flex; align-items: center;
+      padding: 0 16px;
+      z-index: 200;
+      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+    }
+    .hdr h1 { font-size: 1.1rem; font-weight: 700; color: #fff; }
+
+    /* ========= コンテンツ ========= */
+    .content {
+      padding-top: calc(var(--hdr-h) + 12px);
+      padding-bottom: calc(var(--nav-h) + 20px);
+      padding-left: 14px;
+      padding-right: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ========= カード ========= */
+    .card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 20px 18px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    }
+    .card-header {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 16px;
+    }
+    .card-icon {
+      width: 34px; height: 34px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .card-icon.info     { background: #dbeafe; }
+    .card-icon.settings { background: #f3e8ff; }
+    .card-icon.notif    { background: #dcfce7; }
+    .card-icon.password { background: #fef3c7; }
+    .card-icon.danger   { background: #fee2e2; }
+    .card-title { font-size: 0.98rem; font-weight: 700; color: var(--text); }
+
+    /* ========= アカウント情報 ========= */
+    .user-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 0;
+    }
+    .user-avatar {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--main);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; color: #fff; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .user-name  { font-size: 1rem; font-weight: 700; }
+    .user-email { font-size: 0.78rem; color: var(--sub); margin-top: 2px; }
+
+    /* ========= フォーム要素 ========= */
+    .form-row { margin-bottom: 14px; }
+    .form-row:last-of-type { margin-bottom: 0; }
+    .form-label {
+      display: block;
+      font-size: 0.78rem; font-weight: 600;
+      color: var(--sub); margin-bottom: 5px;
+    }
+    .form-select, .form-input {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 10px 12px;
+      font-size: 0.9rem; font-family: inherit;
+      outline: none; color: var(--text);
+      background: #fafafa;
+      transition: border-color .2s;
+      appearance: none;
+    }
+    .form-select:focus, .form-input:focus {
+      border-color: var(--main); background: var(--white);
+    }
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '▾';
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none; color: var(--sub); font-size: 0.85rem;
+    }
+
+    /* ========= トグル ========= */
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 4px 0; margin-bottom: 14px;
+    }
+    .toggle-row:last-of-type { margin-bottom: 0; }
+    .toggle-label { font-size: 0.88rem; color: var(--text); }
+    .toggle-sub   { font-size: 0.72rem; color: var(--sub); margin-top: 1px; }
+    .toggle {
+      position: relative; width: 44px; height: 24px; flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: #ccc; border-radius: 24px;
+      cursor: pointer; transition: background .2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute; width: 18px; height: 18px;
+      background: #fff; border-radius: 50%;
+      top: 3px; left: 3px;
+      transition: transform .2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .toggle input:checked + .toggle-slider { background: var(--main); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+    /* ========= ボタン ========= */
+    .btn-primary {
+      width: 100%; margin-top: 14px;
+      padding: 12px;
+      background: var(--main); color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 0.92rem; font-weight: 700;
+      cursor: pointer; transition: background .15s;
+    }
+    .btn-primary:hover    { background: var(--main-dark); }
+    .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+
+    .btn-outline {
+      width: 100%; margin-top: 10px;
+      padding: 12px;
+      background: none; color: var(--sub);
+      border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: background .15s;
+    }
+    .btn-outline:hover { background: var(--bg); }
+
+    .btn-danger {
+      width: 100%; margin-top: 10px;
+      padding: 12px;
+      background: none; color: var(--danger);
+      border: 1.5px solid var(--danger); border-radius: 10px;
+      font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: background .15s, color .15s;
+    }
+    .btn-danger:hover { background: #fee2e2; }
+
+    /* ========= メッセージ ========= */
+    .msg {
+      font-size: 0.8rem; padding: 9px 12px;
+      border-radius: 8px; margin-top: 10px; display: none;
+      line-height: 1.5;
+    }
+    .msg.success { background: #dcfce7; color: #166534; display: block; }
+    .msg.error   { background: #fee2e2; color: #991b1b; display: block; }
+    .msg.loading { background: #e0e7ff; color: #3730a3; display: block; }
+
+    /* ========= 注釈 ========= */
+    .hint {
+      font-size: 0.72rem; color: var(--sub); margin-top: 8px; line-height: 1.5;
+    }
+
+    /* ========= 下部ナビ ========= */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      height: var(--nav-h);
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      display: flex; z-index: 200;
+      box-shadow: 0 -2px 8px rgba(0,0,0,.06);
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 2px;
+      text-decoration: none; color: var(--sub);
+      font-size: 0.65rem; font-weight: 500;
+      transition: color .15s;
+    }
+    .nav-item.active { color: var(--main); }
+    .nav-icon { font-size: 1.25rem; line-height: 1; }
+  </style>
+</head>
+<body>
+
+<header class="hdr">
+  <h1>アカウント</h1>
+</header>
+
+<main class="content">
+
+  <!-- ===== アカウント情報 ===== -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon info">👤</div>
+      <div class="card-title">アカウント情報</div>
+    </div>
+    <div class="user-row">
+      <div class="user-avatar" id="userInitial">?</div>
+      <div>
+        <div class="user-name"  id="userName">読み込み中…</div>
+        <div class="user-email" id="userEmail"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 個人設定 ===== -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon settings">⚙️</div>
+      <div class="card-title">個人設定</div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label" for="defaultDuration">デフォルト所要時間</label>
+      <div class="select-wrap">
+        <select class="form-select" id="defaultDuration">
+          <option value="1">1時間</option>
+          <option value="2">2時間</option>
+          <option value="3">3時間</option>
+        </select>
+      </div>
+      <p class="hint">終了時間を指定しない予定の長さ（例: 「明日18時に会議」）</p>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label" for="warningLevel">注意喚起レベル</label>
+      <div class="select-wrap">
+        <select class="form-select" id="warningLevel">
+          <option value="gentle">優しい（時間重複のみ警告）</option>
+          <option value="standard">標準（ブロック期間・終日と重複で警告）</option>
+          <option value="strict">厳しめ（締切との重複も警告）</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="settingsMsg" class="msg"></div>
+    <button class="btn-primary" onclick="saveSettings()">保存する</button>
+  </div>
+
+  <!-- ===== 通知設定 ===== -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon notif">🔔</div>
+      <div class="card-title">通知設定</div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label" for="remindMinutes">開始前リマインド</label>
+      <div class="select-wrap">
+        <select class="form-select" id="remindMinutes">
+          <option value="">オフ</option>
+          <option value="5">5分前</option>
+          <option value="15">15分前</option>
+          <option value="30">30分前</option>
+          <option value="60">1時間前</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">1日前に通知</div>
+        <div class="toggle-sub">予定の前日にリマインドを送る</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="remindDayBefore">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label" for="remindDeadline">締切前通知</label>
+      <div class="select-wrap">
+        <select class="form-select" id="remindDeadline">
+          <option value="">オフ</option>
+          <option value="1">1日前</option>
+          <option value="3">3日前</option>
+          <option value="7">7日前</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="hint">※ 通知機能は設定を保存します。実際の通知送信は今後対応予定です。</p>
+    <div id="notifMsg" class="msg"></div>
+    <button class="btn-primary" onclick="saveNotifSettings()">保存する</button>
+  </div>
+
+  <!-- ===== パスワード変更 ===== -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon password">🔑</div>
+      <div class="card-title">パスワード変更</div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label" for="oldPassword">現在のパスワード</label>
+      <input class="form-input" type="password" id="oldPassword" placeholder="現在のパスワード">
+    </div>
+    <div class="form-row">
+      <label class="form-label" for="newPassword">新しいパスワード</label>
+      <input class="form-input" type="password" id="newPassword" placeholder="8文字以上">
+    </div>
+    <div class="form-row">
+      <label class="form-label" for="confirmPassword">確認（再入力）</label>
+      <input class="form-input" type="password" id="confirmPassword" placeholder="新しいパスワードを再入力">
+    </div>
+
+    <div id="pwMsg" class="msg"></div>
+    <button class="btn-primary" id="pwBtn" onclick="changePassword()">変更する</button>
+  </div>
+
+  <!-- ===== アカウント操作 ===== -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon danger">⚠️</div>
+      <div class="card-title">アカウント操作</div>
+    </div>
+
+    <button class="btn-outline" onclick="logout()">ログアウト</button>
+    <button class="btn-danger"  onclick="confirmDelete()">アカウントを削除する</button>
+
+    <div id="accountMsg" class="msg"></div>
+  </div>
+
+</main>
+
+<nav class="bottom-nav">
+  <a href="/home/" class="nav-item">
+    <span class="nav-icon">🏠</span><span>ホーム</span>
+  </a>
+  <a href="/input/" class="nav-item">
+    <span class="nav-icon">➕</span><span>入力</span>
+  </a>
+  <a href="/result/" class="nav-item">
+    <span class="nav-icon">🔍</span><span>結果</span>
+  </a>
+  <a href="/account/" class="nav-item active">
+    <span class="nav-icon">👤</span><span>アカウント</span>
+  </a>
+</nav>
+
+<script>
+  const API_SCHEDULE = 'http://localhost:8000/api/schedule';
+  const API_AUTH     = 'http://localhost:8000/api/auth';
+  const USER_ID      = 'user1';
+
+  // ---- アカウント情報表示 ----
+  const userName  = localStorage.getItem('user_name')  || 'ゲスト';
+  const userEmail = localStorage.getItem('user_email') || '';
+  document.getElementById('userName').textContent  = userName;
+  document.getElementById('userEmail').textContent = userEmail;
+  document.getElementById('userInitial').textContent = userName.charAt(0).toUpperCase();
+
+  // ---- 設定読み込み ----
+  async function loadSettings() {
+    try {
+      const res  = await fetch(`${API_SCHEDULE}/settings/?user_id=${USER_ID}`);
+      const data = await res.json();
+      if (data.status !== 'success') return;
+
+      const s = data.settings;
+      document.getElementById('defaultDuration').value = String(s.default_duration_hours || 1);
+      document.getElementById('warningLevel').value    = s.warning_level || 'standard';
+      document.getElementById('remindMinutes').value   = s.remind_minutes_before != null ? String(s.remind_minutes_before) : '';
+      document.getElementById('remindDayBefore').checked = Boolean(s.remind_day_before);
+      document.getElementById('remindDeadline').value  = s.remind_days_before_deadline != null ? String(s.remind_days_before_deadline) : '';
+    } catch (_) {}
+  }
+  loadSettings();
+
+  // ---- 個人設定保存 ----
+  async function saveSettings() {
+    const body = {
+      user_id               : USER_ID,
+      default_duration_hours: parseInt(document.getElementById('defaultDuration').value),
+      warning_level         : document.getElementById('warningLevel').value,
+    };
+    await patchSettings(body, 'settingsMsg');
+  }
+
+  // ---- 通知設定保存 ----
+  async function saveNotifSettings() {
+    const minVal      = document.getElementById('remindMinutes').value;
+    const dlVal       = document.getElementById('remindDeadline').value;
+    const body = {
+      user_id                    : USER_ID,
+      remind_minutes_before      : minVal   !== '' ? parseInt(minVal)   : null,
+      remind_day_before          : document.getElementById('remindDayBefore').checked,
+      remind_days_before_deadline: dlVal    !== '' ? parseInt(dlVal)    : null,
+    };
+    await patchSettings(body, 'notifMsg');
+  }
+
+  async function patchSettings(body, msgId) {
+    showMsg(msgId, 'loading', '保存中…');
+    try {
+      const res  = await fetch(`${API_SCHEDULE}/settings/`, {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok || data.status !== 'success') throw new Error('保存に失敗しました');
+      showMsg(msgId, 'success', '✅ 保存しました');
+      setTimeout(() => hideMsg(msgId), 3000);
+    } catch (e) {
+      showMsg(msgId, 'error', `❌ ${e.message}`);
+    }
+  }
+
+  // ---- パスワード変更 ----
+  async function changePassword() {
+    const oldPw  = document.getElementById('oldPassword').value;
+    const newPw  = document.getElementById('newPassword').value;
+    const confPw = document.getElementById('confirmPassword').value;
+
+    if (!oldPw || !newPw || !confPw) {
+      showMsg('pwMsg', 'error', '全ての項目を入力してください'); return;
+    }
+    if (newPw !== confPw) {
+      showMsg('pwMsg', 'error', '新しいパスワードが一致しません'); return;
+    }
+    if (newPw.length < 8) {
+      showMsg('pwMsg', 'error', '新しいパスワードは8文字以上にしてください'); return;
+    }
+
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      showMsg('pwMsg', 'error', 'ログインが必要です。再度ログインしてください'); return;
+    }
+
+    const btn = document.getElementById('pwBtn');
+    btn.disabled = true;
+    showMsg('pwMsg', 'loading', '変更中…');
+
+    try {
+      const res  = await fetch(`${API_AUTH}/change-password/`, {
+        method:  'POST',
+        headers: {
+          'Content-Type' : 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ old_password: oldPw, new_password: newPw }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '変更に失敗しました');
+
+      showMsg('pwMsg', 'success', '✅ パスワードを変更しました');
+      document.getElementById('oldPassword').value    = '';
+      document.getElementById('newPassword').value    = '';
+      document.getElementById('confirmPassword').value = '';
+    } catch (e) {
+      showMsg('pwMsg', 'error', `❌ ${e.message}`);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ---- ログアウト ----
+  function logout() {
+    if (!confirm('ログアウトしますか？')) return;
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_name');
+    localStorage.removeItem('user_email');
+    window.location.href = '/login/';
+  }
+
+  // ---- アカウント削除 ----
+  function confirmDelete() {
+    const pw = prompt('アカウントを削除します。確認のためパスワードを入力してください:');
+    if (pw === null) return;
+    if (!pw) { alert('パスワードを入力してください'); return; }
+    deleteAccount(pw);
+  }
+
+  async function deleteAccount(password) {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      showMsg('accountMsg', 'error', 'ログインが必要です'); return;
+    }
+
+    showMsg('accountMsg', 'loading', '削除中…');
+
+    try {
+      const res  = await fetch(`${API_AUTH}/delete/`, {
+        method:  'DELETE',
+        headers: {
+          'Content-Type' : 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '削除に失敗しました');
+
+      // localStorage をクリアしてログインページへ
+      localStorage.clear();
+      alert('アカウントを削除しました。ご利用ありがとうございました。');
+      window.location.href = '/login/';
+    } catch (e) {
+      showMsg('accountMsg', 'error', `❌ ${e.message}`);
+    }
+  }
+
+  // ---- メッセージ表示 ----
+  function showMsg(id, type, text) {
+    const el = document.getElementById(id);
+    el.className     = `msg ${type}`;
+    el.textContent   = text;
+    el.style.display = 'block';
+  }
+  function hideMsg(id) {
+    const el = document.getElementById(id);
+    el.style.display = 'none';
+  }
+</script>
+</body>
+</html>

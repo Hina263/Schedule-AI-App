@@ -168,3 +168,44 @@ class MeView(APIView):
 
     def get(self, request):
         return Response(_user_data(request.user))
+
+
+class ChangePasswordView(APIView):
+    """パスワード変更"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        old_password = request.data.get('old_password', '')
+        new_password = request.data.get('new_password', '')
+
+        if not old_password or not new_password:
+            return Response({'error': '現在のパスワードと新しいパスワードを入力してください'}, status=400)
+
+        if len(new_password) < 8:
+            return Response({'error': '新しいパスワードは8文字以上にしてください'}, status=400)
+
+        user = authenticate(username=request.user.username, password=old_password)
+        if not user:
+            return Response({'error': '現在のパスワードが正しくありません'}, status=401)
+
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'パスワードを変更しました'})
+
+
+class DeleteAccountView(APIView):
+    """アカウント削除"""
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        password = request.data.get('password', '')
+
+        if not password:
+            return Response({'error': 'パスワードを入力してください'}, status=400)
+
+        user = authenticate(username=request.user.username, password=password)
+        if not user:
+            return Response({'error': 'パスワードが正しくありません'}, status=401)
+
+        user.delete()
+        return Response({'message': 'アカウントを削除しました'})

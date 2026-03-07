@@ -105,18 +105,69 @@
       font-size: 0.65rem; padding: 1px 6px; border-radius: 4px;
       background: #e0e7ff; color: #3730a3; font-weight: 600;
     }
-    .del-btn {
+    .ev-actions { display: flex; gap: 2px; align-self: flex-start; flex-shrink: 0; }
+    .del-btn, .edit-btn {
       background: none; border: none;
-      color: #d0d0d0; font-size: 1rem;
+      color: #d0d0d0; font-size: 0.95rem;
       cursor: pointer; padding: 4px 5px;
-      border-radius: 6px; align-self: flex-start; flex-shrink: 0;
+      border-radius: 6px;
       transition: color .15s, background .15s; line-height: 1;
     }
     .del-btn:hover  { color: #ef4444; background: #fee2e2; }
     .del-btn:active { background: #fecaca; }
+    .edit-btn:hover  { color: var(--main); background: var(--main-light); }
+    .edit-btn:active { background: #bfdbfe; }
 
-    /* --- 週間ビュー --- */
-    .week-nav, .month-nav {
+    /* --- 編集シート --- */
+    .edit-form { display: flex; flex-direction: column; gap: 12px; }
+    .edit-label {
+      font-size: 0.78rem; font-weight: 600;
+      color: var(--sub); margin-bottom: -6px;
+    }
+    .edit-input {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 0.9rem; font-family: inherit; outline: none;
+      transition: border-color .2s; background: #fafafa;
+    }
+    .edit-input:focus { border-color: var(--main); background: var(--white); }
+    .edit-row { display: flex; gap: 8px; }
+    .edit-row .edit-input { flex: 1; min-width: 0; }
+    .btn-save {
+      width: 100%; padding: 12px;
+      background: var(--main); color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 0.92rem; font-weight: 700; cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-save:hover    { background: var(--main-dark); }
+    .btn-save:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-cancel-edit {
+      width: 100%; padding: 10px;
+      background: none; color: var(--sub);
+      border: 1px solid var(--border); border-radius: 10px;
+      font-size: 0.88rem; font-weight: 600; cursor: pointer;
+    }
+    .edit-msg {
+      font-size: 0.8rem; padding: 8px 10px;
+      border-radius: 8px; display: none;
+    }
+    .edit-msg.error   { background: #fee2e2; color: #991b1b; display: block; }
+    .edit-msg.loading { background: #e0e7ff; color: #3730a3; display: block; }
+
+    /* --- 締切カウントダウン --- */
+    .deadline-cd {
+      display: inline-block; font-size: 0.68rem; font-weight: 700;
+      color: #b91c1c; margin-left: 5px;
+    }
+    .deadline-cd.expired { color: #aaa; }
+    .deadline-cd.urgent  {
+      color: #fff; background: #dc2626;
+      padding: 1px 5px; border-radius: 4px;
+    }
+
+    /* --- 月間ビュー --- */
+    .month-nav {
       display: flex; align-items: center;
       justify-content: space-between;
       padding: 10px 14px 6px;
@@ -129,35 +180,6 @@
     }
     .nav-arrow:active { background: var(--bg); }
     .range-label { font-size: 0.85rem; font-weight: 600; }
-
-    .week-grid {
-      display: grid; grid-template-columns: repeat(7, 1fr);
-      gap: 3px; padding: 0 10px;
-    }
-    .wd-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-    .wd-name {
-      font-size: 0.62rem; font-weight: 600;
-      color: var(--sub); padding: 2px 0;
-    }
-    .wd-num {
-      width: 26px; height: 26px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.78rem; font-weight: 600; color: var(--text);
-    }
-    .wd-num.today { background: var(--main); color: #fff; }
-    .wd-num.sun   { color: #e74c3c; }
-    .wd-num.sat   { color: #3498db; }
-    .wd-num.today.sun, .wd-num.today.sat { color: #fff; }
-    .wd-events { width: 100%; }
-    .wd-pill {
-      display: block; font-size: 0.52rem; font-weight: 500;
-      padding: 1px 2px; border-radius: 3px; margin-bottom: 2px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;
-    }
-    .wd-pill.activity { background: #dbeafe; color: #1d4ed8; }
-    .wd-pill.deadline { background: #fee2e2; color: #b91c1c; }
-    .wd-pill.block    { background: #fef3c7; color: #92400e; }
-    .wd-more { font-size: 0.52rem; color: var(--sub); text-align: center; }
 
     /* --- 月間ビュー --- */
     .month-label { font-size: 0.95rem; font-weight: 700; }
@@ -179,7 +201,7 @@
       min-height: 60px;
       background: var(--white); border-radius: 7px;
       padding: 4px 3px;
-      border: 1px solid var(--border); overflow: hidden;
+      border: 1px solid var(--border);
     }
     .mo-cell.other-m { opacity: .38; }
     .mo-cell.today-c { border-color: var(--main); background: var(--main-light); }
@@ -195,9 +217,13 @@
       padding: 1px 2px; border-radius: 3px; margin-bottom: 1px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .mo-pill.activity { background: #dbeafe; color: #1d4ed8; }
-    .mo-pill.deadline { background: #fee2e2; color: #b91c1c; }
-    .mo-pill.block    { background: #fef3c7; color: #92400e; }
+    .mo-pill.activity    { background: #dbeafe; color: #1d4ed8; }
+    .mo-pill.deadline    { background: #fee2e2; color: #b91c1c; }
+    .mo-pill.block       { background: #fef3c7; color: #92400e; }
+    /* ブロック帯: 月間 */
+    .mo-pill.block-start { border-radius: 3px 0 0 3px; margin-right: -4px; position: relative; z-index: 1; }
+    .mo-pill.block-mid   { border-radius: 0; margin: 0 -4px; padding-left: 0; padding-right: 0; position: relative; z-index: 1; }
+    .mo-pill.block-end   { border-radius: 0 3px 3px 0; margin-left: -4px; position: relative; z-index: 1; }
     .mo-more { font-size: 0.48rem; color: var(--sub); }
 
     /* --- 共通状態表示 --- */
@@ -219,8 +245,6 @@
     }
 
     /* ---- クリック可能セル ---- */
-    .wd-col { cursor: pointer; }
-    .wd-col:active { opacity: .7; }
     .mo-cell:not(.other-m) { cursor: pointer; }
     .mo-cell:not(.other-m):active { opacity: .7; }
 
@@ -309,7 +333,6 @@
   </div>
   <div class="tabs">
     <button class="tab-btn active" data-tab="today">今日</button>
-    <button class="tab-btn" data-tab="week">週間</button>
     <button class="tab-btn" data-tab="month">月間</button>
   </div>
 </header>
@@ -320,18 +343,6 @@
   <div id="todayView" class="view active">
     <div class="today-wrap" id="todayContent">
       <div class="state-box"><div class="spinner"></div><br>読み込み中…</div>
-    </div>
-  </div>
-
-  <!-- 週間ビュー -->
-  <div id="weekView" class="view">
-    <div class="week-nav">
-      <button class="nav-arrow" id="weekPrev">&#8592;</button>
-      <span class="range-label" id="weekRange">読み込み中…</span>
-      <button class="nav-arrow" id="weekNext">&#8594;</button>
-    </div>
-    <div class="week-grid" id="weekGrid">
-      <div class="state-box" style="grid-column:1/-1"><div class="spinner"></div></div>
     </div>
   </div>
 
@@ -367,6 +378,9 @@
   <a href="/result/" class="nav-item">
     <span class="nav-icon">🔍</span><span>結果</span>
   </a>
+  <a href="/account/" class="nav-item">
+    <span class="nav-icon">👤</span><span>アカウント</span>
+  </a>
 </nav>
 
 <!-- ===== デイドロワー ===== -->
@@ -378,6 +392,38 @@
     <button class="drawer-close" onclick="closeDayDrawer()">✕</button>
   </div>
   <div class="drawer-body" id="drawerBody"></div>
+</div>
+
+<!-- ===== 編集シート ===== -->
+<div class="drawer-overlay" id="editOverlay" onclick="closeEditSheet()" style="z-index:450"></div>
+<div class="day-drawer" id="editSheet" style="z-index:500">
+  <div class="drawer-handle"></div>
+  <div class="drawer-hdr">
+    <span class="drawer-title">予定を編集</span>
+    <button class="drawer-close" onclick="closeEditSheet()">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="edit-form">
+      <div class="edit-label">タイトル</div>
+      <input class="edit-input" type="text" id="editTitle" placeholder="タイトル">
+
+      <div class="edit-label">開始日時</div>
+      <div class="edit-row">
+        <input class="edit-input" type="date" id="editStartDate">
+        <input class="edit-input" type="time" id="editStartTime">
+      </div>
+
+      <div class="edit-label">終了日時</div>
+      <div class="edit-row">
+        <input class="edit-input" type="date" id="editEndDate">
+        <input class="edit-input" type="time" id="editEndTime">
+      </div>
+
+      <div class="edit-msg" id="editMsg"></div>
+      <button class="btn-save" id="editSaveBtn" onclick="saveEdit()">保存する</button>
+      <button class="btn-cancel-edit" onclick="closeEditSheet()">キャンセル</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -392,12 +438,10 @@
     `${today.getMonth()+1}/${today.getDate()} (${DOW[today.getDay()]})`;
 
   // 状態
-  let weekOffset  = 0;
   let calYear     = today.getFullYear();
   let calMonth    = today.getMonth();
   const cache     = {};
   const loaded    = {};
-  let weekEvMap   = {};   // 週間ビューのイベントマップ (key→events[])
   let monthEvMap  = {};   // 月間ビューのイベントマップ
 
   // ---- ユーティリティ ----
@@ -407,11 +451,13 @@
   function zp(n) { return String(n).padStart(2,'0'); }
   function evDateKey(ev) { return ev.start ? ev.start.slice(0,10) : null; }
   function fmtTime(s)    { return s ? (s.includes(' ') ? s.split(' ')[1] : '') : ''; }
-  function esc(s)        {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
   function typeLbl(t) {
-    return ({activity:'アクティビティ', deadline:'締切', block:'ブロック'})[t] || t || '';
+    return ({activity:'予定', deadline:'締切', block:'期間'})[t] || t || '';
   }
   function byDateMap(events) {
     const m = {};
@@ -422,11 +468,42 @@
     return m;
   }
 
-  // 今週の日曜日 (offset 週ずらし)
-  function weekSunday(offset) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - d.getDay() + offset * 7);
-    return d;
+  // ブロックイベントを期間全日に展開したマップを生成
+  function buildEvMap(events) {
+    const m = {};
+    events.forEach(ev => {
+      if (ev.type === 'block' && ev.start && ev.end) {
+        const startD = new Date(ev.start.slice(0,10) + 'T00:00:00');
+        const endD   = new Date(ev.end.slice(0,10)   + 'T00:00:00');
+        const total  = Math.round((endD - startD) / 86400000) + 1;
+        let cur = new Date(startD), idx = 0;
+        while (cur <= endD) {
+          const k   = dateKey(cur);
+          const pos = total === 1 ? 'single'
+                    : idx === 0  ? 'start'
+                    : idx === total - 1 ? 'end' : 'mid';
+          (m[k] = m[k] || []).push({...ev, _blockPos: pos});
+          cur.setDate(cur.getDate() + 1);
+          idx++;
+        }
+      } else {
+        const k = evDateKey(ev);
+        if (k) (m[k] = m[k] || []).push(ev);
+      }
+    });
+    return m;
+  }
+
+  // 締切までの残日数テキスト
+  function daysUntil(ev) {
+    const dateStr = ev.start ? ev.start.slice(0,10) : null;
+    if (!dateStr) return '';
+    const today0  = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const target0 = new Date(dateStr + 'T00:00:00');
+    const diff    = Math.round((target0 - today0) / 86400000);
+    if (diff < 0)  return '期限切れ';
+    if (diff === 0) return '今日締切';
+    return `後${diff}日`;
   }
 
   // ---- API ----
@@ -449,28 +526,36 @@
     const timed  = evs.filter(e => !e.is_all_day)
                       .sort((a,b) => (a.start||'').localeCompare(b.start||''));
     let h = '';
-    allDay.forEach(e => {
-      h += `<div class="ev-card" data-id="${e.id}">
-        <div class="ev-time"><span class="allday-tag">終日</span></div>
+
+    const mkCard = (e, timeHtml) => {
+      const cd    = e.type === 'deadline' ? daysUntil(e) : '';
+      const cdCls = cd === '期限切れ' ? 'expired' : cd === '今日締切' ? 'urgent' : '';
+      const cdHtml = cd ? `<span class="deadline-cd ${cdCls}">${cd}</span>` : '';
+      const cardDKey = dKey || evDateKey(e) || '';
+      return `<div class="ev-card" data-id="${e.id}">
+        <div class="ev-time">${timeHtml}</div>
         <div class="ev-bar ${e.type||'activity'}"></div>
         <div class="ev-body">
           <div class="ev-title">${esc(e.title)}</div>
-          <span class="ev-badge ${e.type||'activity'}">${typeLbl(e.type)}</span>
+          <span class="ev-badge ${e.type||'activity'}">${typeLbl(e.type)}</span>${cdHtml}
         </div>
-        <button class="del-btn" onclick="deleteEvent(${e.id},'${dKey}',this)" title="削除">🗑️</button>
+        <div class="ev-actions">
+          <button class="edit-btn"
+            data-id="${e.id}"
+            data-title="${esc(e.title)}"
+            data-start="${e.start||''}"
+            data-end="${e.end||''}"
+            data-dkey="${cardDKey}"
+            onclick="openEditSheet(this)" title="編集">✏️</button>
+          <button class="del-btn" onclick="deleteEvent(${e.id},'${cardDKey}',this)" title="削除">🗑️</button>
+        </div>
       </div>`;
-    });
+    };
+
+    allDay.forEach(e => { h += mkCard(e, `<span class="allday-tag">終日</span>`); });
     timed.forEach(e => {
       const st = fmtTime(e.start), en = fmtTime(e.end);
-      h += `<div class="ev-card" data-id="${e.id}">
-        <div class="ev-time">${esc(st)}<br><span style="font-size:.65rem">${esc(en)}</span></div>
-        <div class="ev-bar ${e.type||'activity'}"></div>
-        <div class="ev-body">
-          <div class="ev-title">${esc(e.title)}</div>
-          <span class="ev-badge ${e.type||'activity'}">${typeLbl(e.type)}</span>
-        </div>
-        <button class="del-btn" onclick="deleteEvent(${e.id},'${dKey}',this)" title="削除">🗑️</button>
-      </div>`;
+      h += mkCard(e, `${esc(st)}<br><span style="font-size:.65rem">${esc(en)}</span>`);
     });
     if (evs.length === 0) h = `<div class="state-box">${emptyMsg || '予定はありません'}</div>`;
     return h;
@@ -483,9 +568,34 @@
     try {
       const events = await fetchEvents('今日', 'today-' + dateKey(today));
       renderToday(el, events);
+      loadUpcomingDeadlines(el);  // 近日締切を非同期で追加
     } catch(e) {
       el.innerHTML = err(e.message);
     }
+  }
+
+  async function loadUpcomingDeadlines(container) {
+    try {
+      const mKey = `month-${calYear}-${calMonth}`;
+      // 月間キャッシュがあれば使い回す、なければ今月を取得
+      const evs = cache[mKey]
+        || await fetchEvents(`${calYear}年${calMonth+1}月`, mKey);
+
+      const today0 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const deadlines = evs
+        .filter(ev => ev.type === 'deadline' && ev.start)
+        .filter(ev => new Date(ev.start.slice(0,10) + 'T00:00:00') >= today0)
+        .sort((a,b) => a.start.localeCompare(b.start))
+        .slice(0, 5);
+
+      if (!deadlines.length || !container.isConnected) return;
+
+      const div = document.createElement('div');
+      div.innerHTML =
+        `<div class="section-label" style="margin-top:14px">📌 近日締切</div>` +
+        renderEvCards(deadlines, null, '');
+      container.appendChild(div);
+    } catch(_) { /* サイレントに失敗 */ }
   }
 
   function renderToday(el, events) {
@@ -496,50 +606,11 @@
     el.innerHTML = h;
   }
 
-  // ---- 週間ビュー ----
-  async function loadWeek() {
-    const sun = weekSunday(weekOffset);
-    const sat = new Date(sun); sat.setDate(sat.getDate() + 6);
-
-    const y1=sun.getFullYear(), m1=sun.getMonth()+1, d1=sun.getDate();
-    const y2=sat.getFullYear(), m2=sat.getMonth()+1, d2=sat.getDate();
-    const period  = `${y1}年${m1}月${d1}日から${y2}年${m2}月${d2}日`;
-    const cacheKey = 'week-' + dateKey(sun);
-
-    document.getElementById('weekRange').textContent = `${m1}/${d1} ～ ${m2}/${d2}`;
-    const grid = document.getElementById('weekGrid');
-    grid.innerHTML = `<div class="state-box" style="grid-column:1/-1">${loading()}</div>`;
-
-    try {
-      const events = await fetchEvents(period, cacheKey);
-      renderWeek(grid, sun, events);
-    } catch(e) {
-      grid.innerHTML = `<div class="err-box" style="grid-column:1/-1">取得に失敗しました: ${esc(e.message)}</div>`;
-    }
-  }
-
-  function renderWeek(grid, sun, events) {
-    weekEvMap = byDateMap(events);
-    const tk  = dateKey(today);
-    let h = '';
-    for (let i = 0; i < 7; i++) {
-      const d   = new Date(sun); d.setDate(d.getDate() + i);
-      const key = dateKey(d);
-      const dow = d.getDay();
-      const isTd = key === tk;
-      const evs  = weekEvMap[key] || [];
-      const numC = `wd-num${isTd?' today':''}${dow===0?' sun':dow===6?' sat':''}`;
-      h += `<div class="wd-col" data-date="${key}" onclick="openDayDrawer('${key}')">
-        <div class="wd-name">${DOW[dow]}</div>
-        <div class="${numC}">${d.getDate()}</div>
-        <div class="wd-events">`;
-      evs.slice(0,3).forEach(ev => {
-        h += `<span class="wd-pill ${ev.type||'activity'}" title="${esc(ev.title)}">${esc(ev.title)}</span>`;
-      });
-      if (evs.length > 3) h += `<div class="wd-more">+${evs.length-3}</div>`;
-      h += `</div></div>`;
-    }
-    grid.innerHTML = h;
+  function pillCls(ev) {
+    // ブロックイベントは帯スタイル、それ以外は通常
+    return ev.type === 'block'
+      ? `block block-${ev._blockPos || 'single'}`
+      : (ev.type || 'activity');
   }
 
   // ---- 月間ビュー ----
@@ -557,7 +628,7 @@
   }
 
   function renderMonth(grid, events) {
-    monthEvMap     = byDateMap(events);
+    monthEvMap     = buildEvMap(events);
     const tk       = dateKey(today);
     const firstDow = new Date(calYear, calMonth, 1).getDay();
     const daysM    = new Date(calYear, calMonth+1, 0).getDate();
@@ -578,7 +649,7 @@
       h += `<div class="${cls}" data-date="${key}" onclick="openDayDrawer('${key}')"><div class="mo-num">${d}</div>`;
       const evs = monthEvMap[key] || [];
       evs.slice(0,2).forEach(ev => {
-        h += `<span class="mo-pill ${ev.type||'activity'}">${esc(ev.title)}</span>`;
+        h += `<span class="mo-pill ${pillCls(ev)}">${esc(ev.title)}</span>`;
       });
       if (evs.length > 2) h += `<div class="mo-more">+${evs.length-2}</div>`;
       h += `</div>`;
@@ -600,7 +671,7 @@
 
   // ---- デイドロワー ----
   function openDayDrawer(key) {
-    const evs = weekEvMap[key] || monthEvMap[key] || [];
+    const evs = monthEvMap[key] || [];
     const [y, m, d] = key.split('-');
     const dt  = new Date(+y, +m-1, +d);
     document.getElementById('drawerTitle').textContent =
@@ -635,12 +706,13 @@
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.message || '削除に失敗しました'); }
 
-      // キャッシュから除去
+      // キャッシュから除去（ブロックイベントは全日から除去）
       Object.keys(cache).forEach(k => {
         if (Array.isArray(cache[k])) cache[k] = cache[k].filter(ev => ev.id !== eventId);
       });
-      if (weekEvMap[dKey])  weekEvMap[dKey]  = weekEvMap[dKey].filter(ev => ev.id !== eventId);
-      if (monthEvMap[dKey]) monthEvMap[dKey] = monthEvMap[dKey].filter(ev => ev.id !== eventId);
+      Object.keys(monthEvMap).forEach(k => {
+        monthEvMap[k] = monthEvMap[k].filter(ev => ev.id !== eventId);
+      });
 
       // カードをフェードアウト
       card.style.transition = 'opacity .2s, max-height .3s';
@@ -677,20 +749,6 @@
   }
 
   function updateGridCell(key) {
-    // 週間グリッド
-    const wCol = document.querySelector(`#weekGrid [data-date="${key}"]`);
-    if (wCol) {
-      const evContainer = wCol.querySelector('.wd-events');
-      if (evContainer) {
-        const evs = weekEvMap[key] || [];
-        let h = '';
-        evs.slice(0,3).forEach(ev => {
-          h += `<span class="wd-pill ${ev.type||'activity'}">${esc(ev.title)}</span>`;
-        });
-        if (evs.length > 3) h += `<div class="wd-more">+${evs.length-3}</div>`;
-        evContainer.innerHTML = h;
-      }
-    }
     // 月間グリッド
     const mCell = document.querySelector(`#monthGrid [data-date="${key}"]`);
     if (mCell) {
@@ -698,7 +756,7 @@
       const evs = monthEvMap[key] || [];
       evs.slice(0,2).forEach(ev => {
         const pill = document.createElement('span');
-        pill.className = `mo-pill ${ev.type||'activity'}`;
+        pill.className = `mo-pill ${pillCls(ev)}`;
         pill.textContent = ev.title;
         mCell.appendChild(pill);
       });
@@ -711,6 +769,123 @@
     }
   }
 
+  // ---- 編集シート ----
+  let _editEventId  = null;
+  let _editEventDKey = null;
+
+  function openEditSheet(btn) {
+    // dayDrawer が開いていれば閉じる
+    closeDayDrawer();
+
+    _editEventId   = parseInt(btn.dataset.id);
+    _editEventDKey = btn.dataset.dkey || null;
+
+    document.getElementById('editTitle').value = btn.dataset.title || '';
+
+    const start = btn.dataset.start || '';
+    const end   = btn.dataset.end   || '';
+    if (start) {
+      const [sd, st] = start.split(' ');
+      document.getElementById('editStartDate').value = sd || '';
+      document.getElementById('editStartTime').value = st || '';
+    } else {
+      document.getElementById('editStartDate').value = '';
+      document.getElementById('editStartTime').value = '';
+    }
+    if (end) {
+      const [ed, et] = end.split(' ');
+      document.getElementById('editEndDate').value = ed || '';
+      document.getElementById('editEndTime').value = et || '';
+    } else {
+      document.getElementById('editEndDate').value = '';
+      document.getElementById('editEndTime').value = '';
+    }
+
+    const msgEl = document.getElementById('editMsg');
+    msgEl.className = 'edit-msg';
+    msgEl.textContent = '';
+
+    document.getElementById('editOverlay').classList.add('open');
+    document.getElementById('editSheet').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeEditSheet() {
+    document.getElementById('editOverlay').classList.remove('open');
+    document.getElementById('editSheet').classList.remove('open');
+    document.body.style.overflow = '';
+    _editEventId = null;
+    _editEventDKey = null;
+  }
+
+  async function saveEdit() {
+    if (!_editEventId) return;
+
+    const title     = document.getElementById('editTitle').value.trim();
+    const startDate = document.getElementById('editStartDate').value;
+    const startTime = document.getElementById('editStartTime').value || '00:00';
+    const endDate   = document.getElementById('editEndDate').value;
+    const endTime   = document.getElementById('editEndTime').value   || '00:00';
+
+    const startDt = startDate ? `${startDate} ${startTime}` : null;
+    const endDt   = endDate   ? `${endDate} ${endTime}`     : null;
+
+    const msgEl  = document.getElementById('editMsg');
+    const saveBtn = document.getElementById('editSaveBtn');
+    saveBtn.disabled = true;
+    msgEl.className  = 'edit-msg loading';
+    msgEl.textContent = '保存中…';
+
+    try {
+      const res = await fetch(`${API}/events/${_editEventId}/`, {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id:        USER_ID,
+          title:          title    || undefined,
+          start_datetime: startDt  || undefined,
+          end_datetime:   endDt    || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.message || '更新に失敗しました');
+      }
+      const data    = await res.json();
+      const updated = data.event;
+
+      // キャッシュ更新
+      const eid = _editEventId;
+      Object.keys(cache).forEach(k => {
+        if (Array.isArray(cache[k]))
+          cache[k] = cache[k].map(ev => ev.id === eid ? updated : ev);
+      });
+      Object.keys(monthEvMap).forEach(k => {
+        monthEvMap[k] = monthEvMap[k].map(ev =>
+          ev.id === eid ? {...updated, _blockPos: ev._blockPos} : ev
+        );
+      });
+
+      // グリッドセル更新
+      const dKey = _editEventDKey;
+      if (dKey) updateGridCell(dKey);
+
+      // 今日ビュー更新
+      if (dKey === dateKey(today)) {
+        const tc = document.getElementById('todayContent');
+        const ck = 'today-' + dateKey(today);
+        if (tc && cache[ck]) renderToday(tc, cache[ck]);
+      }
+
+      closeEditSheet();
+    } catch(e) {
+      msgEl.className  = 'edit-msg error';
+      msgEl.textContent = e.message;
+    } finally {
+      saveBtn.disabled = false;
+    }
+  }
+
   // ---- タブ切り替え ----
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -720,15 +895,10 @@
       if (!loaded[tab]) {
         loaded[tab] = true;
         if (tab==='today') loadToday();
-        if (tab==='week')  loadWeek();
         if (tab==='month') loadMonth();
       }
     });
   });
-
-  // 週ナビ
-  document.getElementById('weekPrev').addEventListener('click', () => { weekOffset--; loadWeek(); });
-  document.getElementById('weekNext').addEventListener('click', () => { weekOffset++; loadWeek(); });
 
   // 月ナビ
   document.getElementById('monthPrev').addEventListener('click', () => {
